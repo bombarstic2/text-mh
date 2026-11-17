@@ -1,0 +1,2654 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monster Hunter: Frontier Chronicle - Text MMORPG</title>
+    <!-- โหลด Tailwind CSS สำหรับจัด Layout และ Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- โหลด Google Fonts ภาษาไทย (Kanit และ Sarabun) และ Cinzel สำหรับหัวข้อแฟนตาซี -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- โหลด FontAwesome สำหรับไอคอน -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- โหลด Tone.js สำหรับสร้างเสียงเอฟเฟกต์แบบสังเคราะห์ (ไม่ต้องใช้ไฟล์เสียงภายนอก) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <style>
+        /* ตั้งค่าฟอนต์และธีมหลัก Dark Fantasy / Guild Parchment & Steel */
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #120e0b;
+            color: #e8dcc8;
+            background-image: radial-gradient(circle at 50% 0%, #2a1f18 0%, #120e0b 80%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .font-kanit {
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .font-cinzel {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* ตกแต่ง Scrollbar ให้เข้ากับธีม */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1410;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #5c4530;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8c6a4a;
+        }
+
+        /* การ์ดสไตล์เหล็กและหนังสัตว์ */
+        .guild-card {
+            background: linear-gradient(145deg, #1e1813 0%, #16110d 100%);
+            border: 1px solid #4a3723;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(212, 175, 55, 0.15);
+        }
+
+        .guild-card-highlight {
+            border-color: #b8860b;
+            box-shadow: 0 0 15px rgba(184, 134, 11, 0.25);
+        }
+
+        /* ปุ่มสไตล์กิลด์ */
+        .btn-guild {
+            background: linear-gradient(to bottom, #3b2b1d, #241910);
+            border: 1px solid #785a3c;
+            color: #f3e5ab;
+            transition: all 0.2s ease;
+        }
+        .btn-guild:hover:not(:disabled) {
+            background: linear-gradient(to bottom, #4f3a27, #302216);
+            border-color: #d4af37;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+        }
+        .btn-guild:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+        .btn-guild:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background: linear-gradient(to bottom, #7f1d1d, #450a0a);
+            border: 1px solid #b91c1c;
+            color: #fee2e2;
+        }
+        .btn-danger:hover:not(:disabled) {
+            background: linear-gradient(to bottom, #991b1b, #5c0d0d);
+            border-color: #ef4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-gold {
+            background: linear-gradient(to bottom, #b45309, #78350f);
+            border: 1px solid #f59e0b;
+            color: #fef3c7;
+        }
+        .btn-gold:hover:not(:disabled) {
+            background: linear-gradient(to bottom, #d97706, #92400e);
+            border-color: #fcd34d;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+        }
+
+        /* แอนิเมชันการต่อสู้ */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px) rotate(-1deg); }
+            40% { transform: translateX(8px) rotate(1deg); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes pulseGold {
+            0%, 100% { box-shadow: 0 0 5px rgba(212, 175, 55, 0.3); }
+            50% { box-shadow: 0 0 18px rgba(212, 175, 55, 0.7); }
+        }
+        .animate-pulse-gold {
+            animation: pulseGold 2s infinite;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-35px) scale(1.15); }
+        }
+        .damage-popup {
+            position: absolute;
+            pointer-events: none;
+            animation: floatUp 0.9s ease-out forwards;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            z-index: 50;
+        }
+
+        /* แถบเลือดและ Stamina */
+        .bar-transition {
+            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-amber-700 selection:text-white">
+
+    <!-- กล่องแจ้งเตือนแบบ Custom Toast (แทนการใช้ alert()) -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Modal ยืนยันต่างๆ (เช่น รีเซ็ตเซฟ) -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="guild-card rounded-xl max-w-md w-full p-6 border-amber-600/60">
+            <h3 id="modal-title" class="text-xl font-bold text-amber-400 mb-2">ยืนยันการดำเนินการ</h3>
+            <p id="modal-message" class="text-stone-300 text-sm mb-6">คุณแน่ใจหรือไม่?</p>
+            <div class="flex justify-end gap-3">
+                <button id="modal-cancel" class="btn-guild px-4 py-2 rounded-lg text-sm font-kanit">ยกเลิก</button>
+                <button id="modal-confirm" class="btn-danger px-4 py-2 rounded-lg text-sm font-kanit">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 1. หน้าสร้างตัวละคร (CHARACTER CREATION) ==================== -->
+    <div id="screen-create" class="min-h-screen flex items-center justify-center p-4 py-10">
+        <div class="guild-card rounded-2xl max-w-3xl w-full p-6 sm:p-8 relative overflow-hidden">
+            <!-- ลายประดับมุม -->
+            <div class="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-amber-500/40 rounded-tl-2xl pointer-events-none"></div>
+            <div class="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-amber-500/40 rounded-br-2xl pointer-events-none"></div>
+
+            <div class="text-center mb-8">
+                <div class="inline-block px-3 py-1 rounded-full bg-amber-950/80 border border-amber-600/40 text-amber-400 text-xs font-kanit tracking-wider mb-2">
+                    GUILD REGISTRATION • ASTERA SERVER #01
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-black text-amber-400 font-cinzel tracking-wide drop-shadow">
+                    MONSTER HUNTER
+                </h1>
+                <p class="text-lg sm:text-xl font-kanit text-stone-300 mt-1">Frontier Chronicle</p>
+                <p class="text-xs sm:text-sm text-stone-400 mt-2">ลงทะเบียนนักล่าหน้าใหม่เพื่อออกสำรวจโลกใหม่และพิชิตมอนสเตอร์ระดับตำนาน</p>
+            </div>
+
+            <form id="create-form" class="space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- ชื่อ Hunter -->
+                    <div>
+                        <label class="block text-sm font-kanit text-amber-300 mb-1.5">
+                            <i class="fa-solid fa-user-shield mr-1.5"></i>ชื่อนักล่า (Hunter Name)
+                        </label>
+                        <input type="text" id="input-hunter-name" required maxlength="18" placeholder="เช่น Arthur, Kaito, Somsak"
+                            class="w-full bg-stone-900/90 border border-stone-700 focus:border-amber-500 rounded-lg px-4 py-2.5 text-stone-100 placeholder-stone-500 focus:outline-none transition">
+                    </div>
+
+                    <!-- ชื่อ Palico -->
+                    <div>
+                        <label class="block text-sm font-kanit text-amber-300 mb-1.5">
+                            <i class="fa-solid fa-cat mr-1.5"></i>ชื่อคู่หูแมวเหมียว (Palico Name)
+                        </label>
+                        <input type="text" id="input-palico-name" required maxlength="16" placeholder="เช่น เจ้าส้ม, Mochi, Kuro"
+                            class="w-full bg-stone-900/90 border border-stone-700 focus:border-amber-500 rounded-lg px-4 py-2.5 text-stone-100 placeholder-stone-500 focus:outline-none transition">
+                    </div>
+                </div>
+
+                <!-- เลือกอาวุธเริ่มต้น -->
+                <div>
+                    <label class="block text-sm font-kanit text-amber-300 mb-2">
+                        <i class="fa-solid fa-khanda mr-1.5"></i>เลือกอาวุธคู่ใจเริ่มต้น (Starting Weapon)
+                    </label>
+                    <div id="weapon-selector" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <!-- สร้างตัวเลือกอาวุธด้วย JS -->
+                    </div>
+                </div>
+
+                <div class="pt-2 flex flex-col sm:flex-row gap-3 justify-between items-center border-t border-stone-800">
+                    <button type="button" id="btn-random-char" class="btn-guild w-full sm:w-auto px-5 py-2.5 rounded-lg text-sm font-kanit flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-dice"></i> สุ่มข้อมูลนักล่า
+                    </button>
+                    <button type="submit" class="btn-gold w-full sm:w-auto px-8 py-3 rounded-lg text-base font-kanit font-semibold flex items-center justify-center gap-2 shadow-lg">
+                        <i class="fa-solid fa-compass"></i> ออกเดินทางสู่ Astera
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== 2. หน้าจอหลักเกม (MAIN GAME INTERFACE) ==================== -->
+    <div id="screen-game" class="hidden min-h-screen flex flex-col max-w-7xl mx-auto p-2 sm:p-4 gap-3 sm:gap-4">
+
+        <!-- TOP BAR: แถบสถานะตัวละคร (Player Status Header) -->
+        <header class="guild-card rounded-xl p-3 sm:p-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <!-- ข้อมูลชื่อและแรงก์ -->
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-amber-700 to-stone-900 border border-amber-500/60 flex items-center justify-center text-2xl text-amber-300 shadow-inner shrink-0">
+                        <i id="hud-weapon-icon" class="fa-solid fa-khanda"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h2 id="hud-name" class="text-lg sm:text-xl font-bold font-kanit text-amber-300 leading-tight">Hunter</h2>
+                            <span id="hud-hr" class="px-2 py-0.5 text-xs font-kanit font-semibold bg-amber-900/80 border border-amber-500/50 text-amber-200 rounded">HR 1</span>
+                            <span id="hud-buff-badge" class="hidden px-2 py-0.5 text-xs font-kanit bg-emerald-950 border border-emerald-500/50 text-emerald-300 rounded">
+                                <i class="fa-solid fa-utensils mr-1"></i><span id="hud-buff-text">Food Buff</span>
+                            </span>
+                        </div>
+                        <div class="text-xs text-stone-400 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <span><i class="fa-solid fa-cat text-amber-500 mr-1"></i>Palico: <strong id="hud-palico" class="text-stone-200">Mochi</strong></span>
+                            <span><i class="fa-solid fa-coins text-yellow-400 mr-1"></i><strong id="hud-zenny" class="text-yellow-300">1,000</strong> z</span>
+                            <span class="text-emerald-400"><i class="fa-solid fa-circle text-[8px] mr-1 animate-pulse"></i>Online: <span id="online-count">1,428</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- หลอด HP / Stamina และค่าพลัง -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 flex-1 lg:max-w-2xl">
+                    <!-- HP Bar -->
+                    <div class="bg-stone-950/80 p-2 rounded-lg border border-stone-800">
+                        <div class="flex justify-between text-xs font-kanit mb-1">
+                            <span class="text-emerald-400 font-semibold">HP</span>
+                            <span id="hud-hp-text" class="text-stone-200">100 / 100</span>
+                        </div>
+                        <div class="w-full h-2 bg-stone-800 rounded-full overflow-hidden">
+                            <div id="hud-hp-bar" class="h-full bg-gradient-to-r from-emerald-600 to-green-400 bar-transition" style="width: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Stamina Bar -->
+                    <div class="bg-stone-950/80 p-2 rounded-lg border border-stone-800">
+                        <div class="flex justify-between text-xs font-kanit mb-1">
+                            <span class="text-amber-400 font-semibold">STAMINA</span>
+                            <span id="hud-stam-text" class="text-stone-200">100 / 100</span>
+                        </div>
+                        <div class="w-full h-2 bg-stone-800 rounded-full overflow-hidden">
+                            <div id="hud-stam-bar" class="h-full bg-gradient-to-r from-amber-600 to-yellow-400 bar-transition" style="width: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- ATK / DEF -->
+                    <div class="bg-stone-950/80 p-2 rounded-lg border border-stone-800 flex flex-col justify-center">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-stone-400">พลังโจมตี:</span>
+                            <span id="hud-atk" class="font-kanit font-bold text-red-400">25</span>
+                        </div>
+                        <div class="flex justify-between text-xs mt-0.5">
+                            <span class="text-stone-400">พลังป้องกัน:</span>
+                            <span id="hud-def" class="font-kanit font-bold text-sky-400">10</span>
+                        </div>
+                    </div>
+
+                    <!-- อุปกรณ์สวมใส่ปัจจุบัน -->
+                    <div class="bg-stone-950/80 p-2 rounded-lg border border-stone-800 flex flex-col justify-center text-xs">
+                        <div class="truncate text-amber-200 font-medium" id="hud-weapon-name" title="อาวุธ">Iron Sword I</div>
+                        <div class="truncate text-stone-400 mt-0.5" id="hud-armor-name" title="ชุดเกราะ">Leather Armor</div>
+                    </div>
+                </div>
+
+                <!-- ปุ่มตั้งค่า / เสียง / รีเซ็ต -->
+                <div class="flex items-center justify-end gap-2">
+                    <button id="btn-toggle-sound" class="btn-guild p-2.5 rounded-lg text-xs" title="เปิด/ปิดเสียงเอฟเฟกต์">
+                        <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+                    </button>
+                    <button id="btn-reset-save" class="btn-guild p-2.5 rounded-lg text-xs text-red-300 hover:text-red-200" title="เริ่มเกมใหม่ (ล้างข้อมูล)">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN WORKSPACE: แบ่งซ้าย (พื้นที่เล่นเกมหลัก) และ ขวา (World Chat / MMORPG Feed) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 flex-1">
+
+            <!-- คอลัมน์ซ้าย (8 ส่วน): เมนูและหน้าจอแต่ละโหมด -->
+            <main class="lg:col-span-8 flex flex-col gap-3">
+
+                <!-- แถบเมนูนำทาง (ซ่อนตอนอยู่ในฉากต่อสู้) -->
+                <nav id="hub-nav" class="grid grid-cols-2 sm:grid-cols-6 gap-2">
+                    <button data-tab="quests" class="nav-tab btn-guild active-tab py-2.5 px-2 rounded-xl font-kanit text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 border-amber-500 bg-amber-950/40 text-amber-300">
+                        <i class="fa-solid fa-scroll"></i> <span>เควสต์หลัก</span>
+                    </button>
+                    <button data-tab="arena" class="nav-tab btn-guild py-2.5 px-2 rounded-xl font-kanit text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 text-rose-300 border-rose-800/60">
+                        <i class="fa-solid fa-skull"></i> <span>ลานประลอง</span>
+                    </button>
+                    <button data-tab="smithy" class="nav-tab btn-guild py-2.5 px-2 rounded-xl font-kanit text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-hammer"></i> <span>โรงตีเหล็ก</span>
+                    </button>
+                    <button data-tab="canteen" class="nav-tab btn-guild py-2.5 px-2 rounded-xl font-kanit text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-drumstick-bite"></i> <span>โรงอาหาร</span>
+                    </button>
+                    <button data-tab="expedition" class="nav-tab btn-guild py-2.5 px-2 rounded-xl font-kanit text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-tree"></i> <span>ออกสำรวจ</span>
+                    </button>
+                    <button data-tab="inventory" class="nav-tab btn-guild py-2.5 px-2 rounded-xl font-kanit text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-sack-xmark"></i> <span>กระเป๋า (<span id="inv-count">0</span>)</span>
+                    </button>
+                </nav>
+
+                <!-- ==================== TAB 1: กระดานเควสต์ (QUEST BOARD) ==================== -->
+                <section id="tab-quests" class="tab-content guild-card rounded-xl p-4 sm:p-5 flex-1">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-4 border-b border-stone-800">
+                        <div>
+                            <h3 class="text-lg font-bold font-kanit text-amber-400 flex items-center gap-2">
+                                <i class="fa-solid fa-dragon"></i> กระดานภารกิจล่ามอนสเตอร์ (Quest Board)
+                            </h3>
+                            <p class="text-xs text-stone-400">ล่ามอนสเตอร์ตามระดับ Hunter Rank (HR) เพื่อสะสมวัตถุดิบและเลื่อนขั้น</p>
+                        </div>
+                        <div class="text-xs bg-stone-900 px-3 py-1.5 rounded-lg border border-stone-700 text-stone-300">
+                            EXP สะสม: <span id="quest-exp-text" class="text-amber-400 font-bold">0 / 100</span>
+                        </div>
+                    </div>
+
+                    <div id="quest-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5 max-h-[540px] overflow-y-auto pr-1">
+                        <!-- รายการเควสต์ถูกสร้างด้วย JS -->
+                    </div>
+                </section>
+
+                <!-- ==================== TAB NEW: ลานประลองมรณะ (ELDER & APEX ARENA) ==================== -->
+                <section id="tab-arena" class="tab-content hidden guild-card rounded-xl p-4 sm:p-5 flex-1 border-rose-900/60">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-4 border-b border-rose-950">
+                        <div>
+                            <h3 class="text-lg font-bold font-kanit text-rose-400 flex items-center gap-2">
+                                <i class="fa-solid fa-skull-crossbones"></i> ลานประลองมรณะ (Elder & Apex Arena)
+                            </h3>
+                            <p class="text-xs text-stone-400">ท้าทายมอนสเตอร์ระดับภัยพิบัติที่มีหลายเฟสและท่าไม้ตายทำลายล้าง รับเหรียญตราและวัตถุดิบระดับตำนาน!</p>
+                        </div>
+                        <div class="text-xs bg-rose-950/60 px-3 py-1.5 rounded-lg border border-rose-700/50 text-rose-200 font-kanit">
+                            <i class="fa-solid fa-medal text-amber-400 mr-1"></i>เหรียญอารีน่า: <span id="arena-coin-text" class="text-amber-300 font-bold">0</span>
+                        </div>
+                    </div>
+
+                    <div id="arena-list" class="grid grid-cols-1 gap-4 max-h-[540px] overflow-y-auto pr-1">
+                        <!-- รายการบอสอารีน่าสร้างด้วย JS -->
+                    </div>
+                </section>
+
+                <!-- ==================== TAB 2: โรงตีเหล็ก (SMITHY) ==================== -->
+                <section id="tab-smithy" class="tab-content hidden guild-card rounded-xl p-4 sm:p-5 flex-1">
+                    <div class="pb-3 mb-4 border-b border-stone-800">
+                        <h3 class="text-lg font-bold font-kanit text-amber-400 flex items-center gap-2">
+                            <i class="fa-solid fa-fire-burner"></i> โรงตีเหล็กแห่ง Astera (The Smithy)
+                        </h3>
+                        <p class="text-xs text-stone-400">ใช้วัตถุดิบจากมอนสเตอร์และลานประลองเพื่อตีบวกอาวุธระดับสูงสุดและสร้างชุดเกราะพร้อมสกิลติดตัว</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- อัปเกรดอาวุธ -->
+                        <div class="bg-stone-950/60 border border-stone-800 rounded-xl p-4">
+                            <h4 class="font-kanit font-semibold text-amber-300 mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-khanda"></i> สายพัฒนาอาวุธ (Weapon Tree)
+                            </h4>
+                            <div id="smithy-weapon-box"></div>
+                        </div>
+
+                        <!-- สร้าง/อัปเกรดชุดเกราะ -->
+                        <div class="bg-stone-950/60 border border-stone-800 rounded-xl p-4">
+                            <h4 class="font-kanit font-semibold text-sky-300 mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-shield-halved"></i> ชุดเกราะนักล่า (Armor Sets)
+                            </h4>
+                            <div id="smithy-armor-box" class="space-y-3 max-h-[430px] overflow-y-auto pr-1"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== TAB 3: โรงอาหาร (CANTEEN) ==================== -->
+                <section id="tab-canteen" class="tab-content hidden guild-card rounded-xl p-4 sm:p-5 flex-1">
+                    <div class="pb-3 mb-4 border-b border-stone-800">
+                        <h3 class="text-lg font-bold font-kanit text-amber-400 flex items-center gap-2">
+                            <i class="fa-solid fa-utensils"></i> โรงอาหารเหมียวเชฟ (Meowscular Canteen)
+                        </h3>
+                        <p class="text-xs text-stone-400">รับประทานอาหารมื้อใหญ่ก่อนออกล่า เพื่อเพิ่มค่าสถานะชั่วคราว (คงอยู่จนกว่าจะจบเควสต์ถัดไป)</p>
+                    </div>
+
+                    <div id="canteen-menu" class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                        <!-- เมนูอาหารสร้างด้วย JS -->
+                    </div>
+                </section>
+
+                <!-- ==================== TAB 4: ออกสำรวจ (EXPEDITION) ==================== -->
+                <section id="tab-expedition" class="tab-content hidden guild-card rounded-xl p-4 sm:p-5 flex-1">
+                    <div class="pb-3 mb-4 border-b border-stone-800">
+                        <h3 class="text-lg font-bold font-kanit text-amber-400 flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot"></i> ออกสำรวจพื้นที่ & ผสมไอเทม (Expedition & Crafting)
+                        </h3>
+                        <p class="text-xs text-stone-400">สำรวจภูมิประเทศต่างๆ เพื่อเก็บสมุนไพร แร่ และวัตถุดิบสำหรับสร้างกับดัก ระเบิด และยาฟื้นฟู</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5" id="expedition-zones">
+                        <!-- พื้นที่สำรวจสร้างด้วย JS -->
+                    </div>
+
+                    <!-- โต๊ะคราฟต์ไอเทมฉุกเฉิน -->
+                    <div class="bg-stone-950/70 border border-stone-800 rounded-xl p-4">
+                        <h4 class="font-kanit font-semibold text-emerald-400 mb-2.5 flex items-center gap-2">
+                            <i class="fa-solid fa-flask"></i> ผสมไอเทมภาคสนาม (Crafting List)
+                        </h4>
+                        <div id="crafting-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[260px] overflow-y-auto pr-1">
+                            <!-- รายการคราฟต์สร้างด้วย JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== TAB 5: กระเป๋าสัมภาระ (INVENTORY) ==================== -->
+                <section id="tab-inventory" class="tab-content hidden guild-card rounded-xl p-4 sm:p-5 flex-1">
+                    <div class="flex justify-between items-center pb-3 mb-4 border-b border-stone-800">
+                        <div>
+                            <h3 class="text-lg font-bold font-kanit text-amber-400 flex items-center gap-2">
+                                <i class="fa-solid fa-box-open"></i> คลังไอเทมและชิ้นส่วนมอนสเตอร์
+                            </h3>
+                            <p class="text-xs text-stone-400">ไอเทมฟื้นฟู กับดัก ระเบิด วัตถุดิบคราฟต์ และชิ้นส่วนหายากที่รวบรวมได้</p>
+                        </div>
+                        <button id="btn-sell-junk" class="btn-guild px-3 py-1.5 rounded-lg text-xs font-kanit">
+                            <i class="fa-solid fa-coins text-yellow-400 mr-1"></i>ขายแร่เงิน/ไข่ทองแลก Zenny
+                        </button>
+                    </div>
+
+                    <div id="inventory-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-h-[450px] overflow-y-auto pr-1">
+                        <!-- รายการไอเทมในกระเป๋า -->
+                    </div>
+                </section>
+
+                <!-- ==================== ฉากต่อสู้ (TACTICAL COMBAT ARENA) ==================== -->
+                <section id="combat-arena" class="hidden guild-card guild-card-highlight rounded-xl p-4 sm:p-5 flex-1 flex flex-col justify-between relative">
+                    <!-- ส่วนหัวฉากต่อสู้: ข้อมูลมอนสเตอร์ -->
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-800">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span id="combat-mode-badge" class="px-2.5 py-0.5 rounded text-xs font-kanit font-bold bg-red-950 text-red-300 border border-red-700">SOLO HUNT</span>
+                                <span id="combat-turn-badge" class="px-2.5 py-0.5 rounded text-xs font-kanit bg-stone-800 text-stone-300">Turn 1</span>
+                                <span id="combat-phase-badge" class="hidden px-2.5 py-0.5 rounded text-xs font-kanit font-bold bg-purple-950 text-purple-300 border border-purple-500">Phase 1</span>
+                            </div>
+                            <button id="btn-flee-quest" class="text-xs text-stone-400 hover:text-red-400 underline font-kanit">
+                                <i class="fa-solid fa-flag mr-1"></i>ถอนตัวจากภารกิจ (Abandon)
+                            </button>
+                        </div>
+
+                        <!-- แบนเนอร์แจ้งเตือนเมื่อมอนสเตอร์กำลังชาร์จท่าไม้ตาย (Telegraphed Attack Warning) -->
+                        <div id="telegraph-banner" class="hidden mt-3 p-3 rounded-xl bg-gradient-to-r from-red-950 via-amber-950 to-red-950 border-2 border-amber-400 shadow-lg animate-pulse">
+                            <div class="flex items-center gap-2.5 text-amber-200 font-kanit text-xs sm:text-sm font-bold">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-400 text-lg"></i>
+                                <span id="telegraph-text">⚠️ มอนสเตอร์กำลังรวบรวมพลังเตรียมใช้ท่าไม้ตายรุนแรงในเทิร์นนี้! (ใช้การตั้งรับ, กลิ้งหลบ หรือขัดจังหวะด้วย Stun/Flash Pod!)</span>
+                            </div>
+                        </div>
+
+                        <!-- การ์ดมอนสเตอร์เป้าหมาย -->
+                        <div id="monster-card" class="mt-3 bg-gradient-to-b from-red-950/30 to-stone-950/90 border border-red-900/50 rounded-xl p-4 relative">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div class="flex items-center gap-3.5">
+                                    <div id="monster-icon-box" class="w-16 h-16 rounded-2xl bg-red-950/80 border border-red-600/50 flex items-center justify-center text-3xl text-red-400 shadow-lg shrink-0">
+                                        <i id="monster-icon" class="fa-solid fa-dragon"></i>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <h3 id="monster-name" class="text-xl font-bold font-kanit text-red-300">Great Jagras</h3>
+                                            <span id="monster-stars" class="text-amber-400 text-xs">★</span>
+                                        </div>
+                                        <p id="monster-title" class="text-xs text-stone-400">จอมตะกละแห่งป่าโบราณ</p>
+                                        <!-- สถานะผิดปกติ / ชิ้นส่วนแตกหัก -->
+                                        <div id="monster-statuses" class="flex flex-wrap gap-1.5 mt-1.5"></div>
+                                    </div>
+                                </div>
+
+                                <!-- หลอดเลือดมอนสเตอร์ & หลอด Part Break -->
+                                <div class="sm:w-64 space-y-2">
+                                    <div>
+                                        <div class="flex justify-between text-xs font-kanit mb-1">
+                                            <span class="text-red-400 font-semibold">MONSTER HP</span>
+                                            <span id="monster-hp-text" class="text-stone-200">300 / 300</span>
+                                        </div>
+                                        <div class="w-full h-3 bg-stone-900 rounded-full overflow-hidden border border-stone-700">
+                                            <div id="monster-hp-bar" class="h-full bg-gradient-to-r from-red-700 via-red-500 to-orange-500 bar-transition" style="width: 100%;"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-[11px] font-kanit mb-0.5">
+                                            <span class="text-amber-400"><i class="fa-solid fa-hammer mr-1"></i>ความทนทานชิ้นส่วน (Part)</span>
+                                            <span id="monster-part-text" class="text-stone-400">100%</span>
+                                        </div>
+                                        <div class="w-full h-1.5 bg-stone-900 rounded-full overflow-hidden">
+                                            <div id="monster-part-bar" class="h-full bg-amber-500 bar-transition" style="width: 100%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- แถบสถานะของ Hunter ในฉากต่อสู้ (บัฟ/ดีบัฟชั่วคราว) และสมาชิกปาร์ตี้ -->
+                        <div id="hunter-combat-statuses" class="mt-2 flex flex-wrap gap-1.5"></div>
+
+                        <div id="party-members-bar" class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <!-- แสดง Palico และเพื่อนร่วมปาร์ตี้ AI -->
+                        </div>
+                    </div>
+
+                    <!-- บันทึกการต่อสู้ (Combat Log) -->
+                    <div id="combat-log" class="my-3 bg-stone-950/90 border border-stone-800 rounded-xl p-3 h-40 overflow-y-auto space-y-1.5 text-xs sm:text-sm font-sarabun">
+                        <!-- ข้อความการต่อสู้ -->
+                    </div>
+
+                    <!-- ปุ่มคำสั่งต่อสู้ (Action Controls - 6 ปุ่มเชิงกลยุทธ์) -->
+                    <div id="combat-controls" class="space-y-2">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <!-- 1. โจมตีปกติ -->
+                            <button id="act-attack" class="btn-guild py-2.5 px-2.5 rounded-xl font-kanit text-xs sm:text-sm font-semibold flex flex-col items-center justify-center gap-0.5">
+                                <span><i class="fa-solid fa-sword text-amber-400 mr-1"></i>โจมตีปกติ</span>
+                                <span class="text-[10px] sm:text-[11px] text-stone-400 font-normal">+15 Stam | สะสม Stun</span>
+                            </button>
+
+                            <!-- 2. ท่าไม้ตายอาวุธ -->
+                            <button id="act-skill" class="btn-danger py-2.5 px-2.5 rounded-xl font-kanit text-xs sm:text-sm font-semibold flex flex-col items-center justify-center gap-0.5">
+                                <span id="act-skill-name"><i class="fa-solid fa-fire mr-1"></i>ท่าไม้ตายอาวุธ</span>
+                                <span id="act-skill-cost" class="text-[10px] sm:text-[11px] text-red-200 font-normal">ใช้ 35 Stam</span>
+                            </button>
+
+                            <!-- 3. ขัดจังหวะ / กระแทกสตั๊น (Stun Strike) -->
+                            <button id="act-stun" class="btn-guild py-2.5 px-2.5 rounded-xl font-kanit text-xs sm:text-sm font-semibold flex flex-col items-center justify-center gap-0.5 border-yellow-600/70">
+                                <span><i class="fa-solid fa-bolt text-yellow-400 mr-1"></i>กระแทกขัดจังหวะ</span>
+                                <span id="act-stun-chance" class="text-[10px] sm:text-[11px] text-yellow-200/80 font-normal">ใช้ 20 Stam | สตั๊น 45%</span>
+                            </button>
+
+                            <!-- 4. กลิ้งหลบ (Evade / Dodge %) -->
+                            <button id="act-dodge" class="btn-guild py-2.5 px-2.5 rounded-xl font-kanit text-xs sm:text-sm font-semibold flex flex-col items-center justify-center gap-0.5 border-emerald-600/70">
+                                <span><i class="fa-solid fa-person-running text-emerald-400 mr-1"></i>กลิ้งหลบ (Evade)</span>
+                                <span id="act-dodge-chance" class="text-[10px] sm:text-[11px] text-emerald-300 font-normal">โอกาสหลบ 65% (0 DMG)</span>
+                            </button>
+
+                            <!-- 5. ตั้งโล่ป้องกัน (Guard / Brace) -->
+                            <button id="act-guard" class="btn-guild py-2.5 px-2.5 rounded-xl font-kanit text-xs sm:text-sm font-semibold flex flex-col items-center justify-center gap-0.5 border-sky-600/70">
+                                <span><i class="fa-solid fa-shield text-sky-400 mr-1"></i>ตั้งโล่ป้องกัน</span>
+                                <span class="text-[10px] sm:text-[11px] text-sky-300 font-normal">ลดดาเมจ 75% | +25 Stam</span>
+                            </button>
+
+                            <!-- 6. ใช้ไอเทม -->
+                            <button id="act-items-toggle" class="btn-gold py-2.5 px-2.5 rounded-xl font-kanit text-xs sm:text-sm font-semibold flex flex-col items-center justify-center gap-0.5">
+                                <span><i class="fa-solid fa-flask-vial mr-1"></i>กระเป๋าไอเทม</span>
+                                <span class="text-[10px] sm:text-[11px] text-amber-100 font-normal">ยา / กับดัก / ระเบิดแสง</span>
+                            </button>
+                        </div>
+
+                        <!-- แถบเลือกไอเทมด่วนในฉากต่อสู้ -->
+                        <div id="combat-item-drawer" class="hidden bg-stone-900 border border-amber-600/40 rounded-xl p-2.5 grid grid-cols-2 sm:grid-cols-5 gap-2">
+                            <!-- ปุ่มไอเทมในฉากต่อสู้สร้างด้วย JS -->
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+
+            <!-- คอลัมน์ขวา (4 ส่วน): LIVE WORLD CHAT & SERVER LOG (จำลองบรรยากาศ MMORPG) -->
+            <aside class="lg:col-span-4 guild-card rounded-xl p-3 sm:p-4 flex flex-col h-[360px] lg:h-auto">
+                <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b border-stone-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        <h3 class="font-kanit font-bold text-sm sm:text-base text-amber-300">World Chat & Guild Feed</h3>
+                    </div>
+                    <span class="text-[11px] bg-stone-900 px-2 py-0.5 rounded text-stone-400 border border-stone-800">CH-01 TH</span>
+                </div>
+
+                <!-- กล่องข้อความแชทสด -->
+                <div id="world-chat-feed" class="flex-1 overflow-y-auto space-y-2 pr-1 text-xs">
+                    <!-- ข้อความแชทบอทและระบบ -->
+                </div>
+
+                <!-- ช่องพิมพ์แชทของผู้เล่น -->
+                <form id="chat-form" class="mt-3 pt-2.5 border-t border-stone-800 flex gap-2">
+                    <input type="text" id="chat-input" maxlength="80" placeholder="พิมพ์ข้อความพูดคุยในกิลด์..."
+                        class="flex-1 bg-stone-950 border border-stone-700 focus:border-amber-500 rounded-lg px-3 py-2 text-xs text-stone-200 placeholder-stone-500 focus:outline-none">
+                    <button type="submit" class="btn-guild px-3 py-2 rounded-lg text-xs font-kanit">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </aside>
+
+        </div>
+    </div>
+
+    <script>
+    /**
+     * ============================================================================
+     * MONSTER HUNTER: FRONTIER CHRONICLE (TEXT-BASED MMORPG ENGINE)
+     * พัฒนาในไฟล์เดียว พร้อมระบบเสียง Tone.js, ระบบเซฟ LocalStorage และ AI Multiplayer
+     * ============================================================================
+     */
+
+    // ==================== 1. ข้อมูลพื้นฐานของเกม (GAME DATABASE) ====================
+
+    // ข้อมูลอาวุธ 6 ชนิด พร้อมค่าโบนัสหลบหลีก (dodgeBonus) และโอกาสสตั๊น (stunBonus) และสายอัปเกรด 6 ระดับ
+    const WEAPONS_DATA = {
+        greatsword: {
+            id: 'greatsword',
+            name: 'ดาบใหญ่ (Great Sword)',
+            icon: 'fa-khanda',
+            baseAtk: 30,
+            baseDef: 5,
+            dodgeBonus: -5,
+            stunBonus: 10,
+            desc: 'พลังโจมตีมหาศาล ตั้งการ์ดได้ดี ท่าไม้ตายชาร์จฟันรุนแรง',
+            skillName: 'True Charged Slash',
+            skillMult: 2.35,
+            partBonus: 1.5,
+            stamCost: 40,
+            tiers: [
+                { name: 'Buster Sword I', atk: 30, cost: 0, req: {} },
+                { name: 'Buster Sword II', atk: 46, cost: 400, req: { 'Iron Ore': 3, 'Jagras Scale': 2 } },
+                { name: 'Flame Blade (Anja)', atk: 70, cost: 1100, req: { 'Anjanath Fang': 3, 'Machalite Ore': 3 } },
+                { name: 'Zinogre Usurper', atk: 96, cost: 2200, req: { 'Zinogre Shockfur': 3, 'Zinogre Horn': 2 } },
+                { name: 'Rathalos Firesword', atk: 124, cost: 3600, req: { 'Rathalos Scale': 4, 'Rathalos Ruby': 1 } },
+                { name: 'Black Fatalis Blade', atk: 175, cost: 8000, req: { 'Fatalis Evil Eye': 2, 'Arena Coin': 5 } }
+            ]
+        },
+        longsword: {
+            id: 'longsword',
+            name: 'ดาบยาว (Long Sword)',
+            icon: 'fa-wand-sparkles',
+            baseAtk: 25,
+            baseDef: 2,
+            dodgeBonus: 8,
+            stunBonus: 5,
+            desc: 'สมดุลยอดเยี่ยม คล่องตัว โจมตีต่อเนื่องและหลบหลีกได้ดี',
+            skillName: 'Spirit Helm Breaker',
+            skillMult: 2.05,
+            partBonus: 1.25,
+            stamCost: 35,
+            tiers: [
+                { name: 'Iron Katana I', atk: 25, cost: 0, req: {} },
+                { name: 'Iron Katana II', atk: 41, cost: 400, req: { 'Iron Ore': 3, 'Kulu Plume': 2 } },
+                { name: 'Wyvern Blade "Leaf"', atk: 64, cost: 1100, req: { 'Pukei Sac': 3, 'Machalite Ore': 3 } },
+                { name: 'Amber Slash (Barioth)', atk: 88, cost: 2200, req: { 'Barioth Spike': 3, 'Barioth Pelt': 2 } },
+                { name: 'Extermination\'s Edge', atk: 116, cost: 3600, req: { 'Nergigante Talon': 3, 'Elder Dragon Bone': 3 } },
+                { name: 'Fatalis Zaggespanon', atk: 162, cost: 8000, req: { 'Fatalis Cortex': 3, 'Arena Coin': 5 } }
+            ]
+        },
+        dualblades: {
+            id: 'dualblades',
+            name: 'ดาบคู่ (Dual Blades)',
+            icon: 'fa-bolt',
+            baseAtk: 23,
+            baseDef: 0,
+            dodgeBonus: 18,
+            stunBonus: 0,
+            desc: 'ความเร็วสูงสุด โอกาสกลิ้งหลบสูงมาก ใช้ Stamina น้อยในการออกท่าไม้ตาย',
+            skillName: 'Demon Blade Dance',
+            skillMult: 1.95,
+            partBonus: 1.15,
+            stamCost: 25,
+            tiers: [
+                { name: 'Matched Slicers I', atk: 23, cost: 0, req: {} },
+                { name: 'Matched Slicers II', atk: 38, cost: 400, req: { 'Iron Ore': 3, 'Jagras Claw': 3 } },
+                { name: 'Anja Twinrippers', atk: 59, cost: 1100, req: { 'Anjanath Fang': 2, 'Anjanath Pelt': 2 } },
+                { name: 'Usurper\'s Fulgur', atk: 82, cost: 2200, req: { 'Zinogre Shockfur': 3, 'Zinogre Claw': 2 } },
+                { name: 'Decimation Claws', atk: 108, cost: 3600, req: { 'Nergigante Talon': 4, 'Elder Dragon Bone': 2 } },
+                { name: 'Fatalis Dual Skies', atk: 152, cost: 8000, req: { 'Fatalis Evil Eye': 2, 'Arena Coin': 5 } }
+            ]
+        },
+        hammer: {
+            id: 'hammer',
+            name: 'ค้อนยักษ์ (Hammer)',
+            icon: 'fa-hammer',
+            baseAtk: 28,
+            baseDef: 2,
+            dodgeBonus: 0,
+            stunBonus: 25,
+            desc: 'สุดยอดอาวุธสายทุบ มีโอกาสขัดจังหวะและทำให้มอนสเตอร์มึนงง (Stun) สูงสุด',
+            skillName: 'Big Bang Finisher',
+            skillMult: 2.15,
+            partBonus: 1.85,
+            stunChance: 0.65,
+            stamCost: 35,
+            tiers: [
+                { name: 'Iron Hammer I', atk: 28, cost: 0, req: {} },
+                { name: 'Kulu Beak Hammer', atk: 44, cost: 400, req: { 'Kulu Beak': 2, 'Iron Ore': 3 } },
+                { name: 'Flint Hammer', atk: 67, cost: 1100, req: { 'Anjanath Fang': 3, 'Machalite Ore': 3 } },
+                { name: 'Frozen Core (Barioth)', atk: 92, cost: 2200, req: { 'Barioth Spike': 3, 'Dragonite Ore': 2 } },
+                { name: 'Obliteration\'s Footfall', atk: 120, cost: 3600, req: { 'Nergigante Horn': 3, 'Elder Dragon Bone': 3 } },
+                { name: 'Fatalis Demolisher', atk: 168, cost: 8000, req: { 'Fatalis Horn': 3, 'Arena Coin': 5 } }
+            ]
+        },
+        chargeblade: {
+            id: 'chargeblade',
+            name: 'โล่ชาร์จ (Charge Blade)',
+            icon: 'fa-shield-halved',
+            baseAtk: 26,
+            baseDef: 6,
+            dodgeBonus: 2,
+            stunBonus: 15,
+            desc: 'สลับโหมดดาบโล่และขวานยักษ์ ป้องกันยอดเยี่ยมและปลดปล่อยคลื่นระเบิดสตั๊น',
+            skillName: 'Super Amped Discharge',
+            skillMult: 2.25,
+            partBonus: 1.5,
+            stunChance: 0.45,
+            stamCost: 38,
+            tiers: [
+                { name: 'Proto Commission Axe', atk: 26, cost: 0, req: {} },
+                { name: 'Jagras Escudo', atk: 42, cost: 400, req: { 'Jagras Scale': 3, 'Iron Ore': 3 } },
+                { name: 'Poisonous Veil (Pukei)', atk: 65, cost: 1100, req: { 'Pukei Sac': 3, 'Machalite Ore': 3 } },
+                { name: 'Despot\'s Thundergale', atk: 90, cost: 2200, req: { 'Zinogre Horn': 2, 'Zinogre Shockfur': 3 } },
+                { name: 'Luna Eostre (Rathalos)', atk: 118, cost: 3600, req: { 'Rathalos Ruby': 1, 'Rathalos Wing': 3 } },
+                { name: 'True Fatalis Charger', atk: 166, cost: 8000, req: { 'Fatalis Evil Eye': 2, 'Arena Coin': 5 } }
+            ]
+        },
+        bow: {
+            id: 'bow',
+            name: 'ธนูล่าสัตว์ (Bow)',
+            icon: 'fa-bullseye',
+            baseAtk: 24,
+            baseDef: 1,
+            dodgeBonus: 15,
+            stunBonus: 5,
+            desc: 'โจมตีระยะไกล คล่องตัวสูง หลบหลีกการโจมตีได้ง่าย ยิงศรเจาะเกราะ',
+            skillName: 'Dragon Piercer',
+            skillMult: 2.1,
+            partBonus: 1.4,
+            stamCost: 30,
+            tiers: [
+                { name: 'Hunter\'s Bow I', atk: 24, cost: 0, req: {} },
+                { name: 'Kulu Arrow I', atk: 39, cost: 400, req: { 'Kulu Plume': 3, 'Iron Ore': 2 } },
+                { name: 'Anja Arch', atk: 61, cost: 1100, req: { 'Anjanath Pelt': 3, 'Anjanath Fang': 2 } },
+                { name: 'Icicle Blizzard', atk: 85, cost: 2200, req: { 'Barioth Pelt': 3, 'Barioth Spike': 2 } },
+                { name: 'Doom\'s Shaft', atk: 112, cost: 3600, req: { 'Nergigante Horn': 2, 'Nergigante Talon': 3 } },
+                { name: 'Fatalis Wrath Bow', atk: 158, cost: 8000, req: { 'Fatalis Cortex': 3, 'Arena Coin': 5 } }
+            ]
+        }
+    };
+
+    // ข้อมูลชุดเกราะ 8 เซ็ต พร้อมสกิลติดตัว (Passive Skill)
+    const ARMORS_DATA = [
+        { id: 'leather', name: 'Leather Armor Set', def: 10, hpBonus: 0, dodgeBonus: 0, stunBonus: 0, skillText: 'ไม่มีสกิลพิเศษ', cost: 0, req: {} },
+        { id: 'jagras', name: 'Jagras Mail Set', def: 18, hpBonus: 20, dodgeBonus: 5, stunBonus: 0, skillText: 'Evade Extender (+5% หลบหลีก)', cost: 350, req: { 'Jagras Scale': 3, 'Jagras Claw': 2 } },
+        { id: 'kulu', name: 'Kulu-Ya-Ku Set', def: 24, hpBonus: 30, dodgeBonus: 10, stunBonus: 5, skillText: 'Agile Footwork (+10% หลบหลีก)', cost: 650, req: { 'Kulu Plume': 3, 'Kulu Beak': 2 } },
+        { id: 'anja', name: 'Anjanath Armor Set', def: 34, hpBonus: 50, dodgeBonus: 0, stunBonus: 10, skillText: 'Slugger Lv.1 (+10% โอกาสสตั๊น)', cost: 1100, req: { 'Anjanath Pelt': 3, 'Anjanath Fang': 2 } },
+        { id: 'zinogre', name: 'Zinogre Mail Set', def: 46, hpBonus: 70, dodgeBonus: 12, stunBonus: 10, skillText: 'Latent Power (+12% หลบ, +10% สตั๊น)', cost: 2100, req: { 'Zinogre Shockfur': 3, 'Zinogre Claw': 2 } },
+        { id: 'rathalos', name: 'Rathalos Soul Set', def: 58, hpBonus: 95, dodgeBonus: 8, stunBonus: 12, skillText: 'Rathalos Mastery (+8% หลบ, +12% สตั๊น)', cost: 3200, req: { 'Rathalos Scale': 4, 'Rathalos Wing': 2 } },
+        { id: 'velkhana', name: 'Velkhana Rimeguard Set', def: 74, hpBonus: 130, dodgeBonus: 15, stunBonus: 15, skillText: 'Frostcraft (+15% หลบ, +15% สตั๊น)', cost: 5200, req: { 'Velkhana Crystal': 3, 'Arena Coin': 3 } },
+        { id: 'fatalis', name: 'Fatalis Dragon Alpha+', def: 98, hpBonus: 180, dodgeBonus: 20, stunBonus: 20, skillText: 'Inheritance (+20% หลบ, +20% สตั๊น)', cost: 9500, req: { 'Fatalis Cortex': 3, 'Fatalis Evil Eye': 1, 'Arena Coin': 6 } }
+    ];
+
+    // ข้อมูลมอนสเตอร์กระดานเควสต์หลัก 8 ตัว (HR 1 ถึง HR 6)
+    const QUESTS_DATA = [
+        {
+            id: 'q_jagras',
+            rankReq: 1,
+            stars: '★',
+            name: 'Great Jagras (เกรท จากราส)',
+            title: 'จอมตะกละแห่งป่าโบราณ (Ancient Forest)',
+            icon: 'fa-paw',
+            hp: 260,
+            partHp: 110,
+            atk: 18,
+            def: 4,
+            zenny: 350,
+            exp: 45,
+            ultimateName: 'Belly Slam (กระโดดทับสุดแรง)',
+            statusEffect: null,
+            drops: [
+                { item: 'Jagras Scale', chance: 0.9, min: 1, max: 3 },
+                { item: 'Jagras Claw', chance: 0.7, min: 1, max: 2 }
+            ],
+            partDrop: 'Jagras Claw'
+        },
+        {
+            id: 'q_kulu',
+            rankReq: 1,
+            stars: '★★',
+            name: 'Kulu-Ya-Ku (คูลู-ยา-คู)',
+            title: 'จอมโจรขโมยไข่ผู้ใช้หิน (Wildspire Waste)',
+            icon: 'fa-feather',
+            hp: 340,
+            partHp: 140,
+            atk: 23,
+            def: 6,
+            zenny: 500,
+            exp: 65,
+            ultimateName: 'Boulder Smash (ทุ่มหินยักษ์ใส่หัว)',
+            statusEffect: null,
+            drops: [
+                { item: 'Kulu Plume', chance: 0.9, min: 1, max: 3 },
+                { item: 'Kulu Beak', chance: 0.7, min: 1, max: 2 }
+            ],
+            partDrop: 'Kulu Beak'
+        },
+        {
+            id: 'q_pukei',
+            rankReq: 2,
+            stars: '★★★',
+            name: 'Pukei-Pukei (พูเค-พูเค)',
+            title: 'กิ้งก่าปีกพิษแห่งป่าทึบ (Poison Wyvern)',
+            icon: 'fa-biohazard',
+            hp: 450,
+            partHp: 180,
+            atk: 28,
+            def: 8,
+            zenny: 700,
+            exp: 90,
+            ultimateName: 'Venom Cloud (พ่นหมอกพิษร้ายแรง)',
+            statusEffect: 'poison',
+            drops: [
+                { item: 'Pukei Sac', chance: 0.85, min: 1, max: 2 },
+                { item: 'Pukei Scale', chance: 0.85, min: 1, max: 3 }
+            ],
+            partDrop: 'Pukei Sac'
+        },
+        {
+            id: 'q_anjanath',
+            rankReq: 2,
+            stars: '★★★',
+            name: 'Anjanath (แอนจานัธ)',
+            title: 'อสูรนักล่าพ่นไฟ (Fierce Wyvern)',
+            icon: 'fa-fire-flame-curved',
+            hp: 600,
+            partHp: 240,
+            atk: 35,
+            def: 11,
+            zenny: 950,
+            exp: 120,
+            ultimateName: 'Inferno Breath (พ่นเปลวเพลิงเผาผลาญ)',
+            statusEffect: 'burn',
+            drops: [
+                { item: 'Anjanath Pelt', chance: 0.85, min: 1, max: 2 },
+                { item: 'Anjanath Fang', chance: 0.75, min: 1, max: 2 }
+            ],
+            partDrop: 'Anjanath Fang'
+        },
+        {
+            id: 'q_barioth',
+            rankReq: 3,
+            stars: '★★★★',
+            name: 'Barioth (บาริออธ)',
+            title: 'เขี้ยวดาบพายุหิมะ (Frost Fang Wyvern)',
+            icon: 'fa-snowflake',
+            hp: 820,
+            partHp: 320,
+            atk: 44,
+            def: 14,
+            zenny: 1350,
+            exp: 165,
+            ultimateName: 'Glacial Tornado (พายุทอร์นาโดน้ำแข็ง)',
+            statusEffect: 'frostbite',
+            drops: [
+                { item: 'Barioth Pelt', chance: 0.85, min: 1, max: 3 },
+                { item: 'Barioth Spike', chance: 0.75, min: 1, max: 2 }
+            ],
+            partDrop: 'Barioth Spike'
+        },
+        {
+            id: 'q_zinogre',
+            rankReq: 4,
+            stars: '★★★★★',
+            name: 'Zinogre (ซิโนเกร)',
+            title: 'หมาป่าสายฟ้าผู้เกรี้ยวกราด (Thunder Wolf)',
+            icon: 'fa-bolt',
+            hp: 1050,
+            partHp: 400,
+            atk: 52,
+            def: 17,
+            zenny: 1800,
+            exp: 220,
+            ultimateName: 'Thunderlord Slam (อัสนีบาตฟาดปฐพี)',
+            statusEffect: 'thunder',
+            drops: [
+                { item: 'Zinogre Shockfur', chance: 0.85, min: 1, max: 3 },
+                { item: 'Zinogre Claw', chance: 0.75, min: 1, max: 2 },
+                { item: 'Zinogre Horn', chance: 0.6, min: 1, max: 1 }
+            ],
+            partDrop: 'Zinogre Horn'
+        },
+        {
+            id: 'q_rathalos',
+            rankReq: 5,
+            stars: '★★★★★★',
+            name: 'Rathalos (ราธาลอส)',
+            title: 'ราชันย์แห่งเวหา (King of the Skies)',
+            icon: 'fa-dragon',
+            hp: 1350,
+            partHp: 500,
+            atk: 62,
+            def: 21,
+            zenny: 2400,
+            exp: 290,
+            ultimateName: 'World Tour Fireball (ลูกไฟเพลิงจากฟากฟ้า)',
+            statusEffect: 'burn',
+            drops: [
+                { item: 'Rathalos Scale', chance: 0.9, min: 2, max: 3 },
+                { item: 'Rathalos Wing', chance: 0.75, min: 1, max: 2 },
+                { item: 'Rathalos Ruby', chance: 0.3, min: 1, max: 1 }
+            ],
+            partDrop: 'Rathalos Ruby'
+        },
+        {
+            id: 'q_nergigante',
+            rankReq: 6,
+            stars: '★★★★★★★',
+            name: 'Nergigante (เนอร์กิกันเต้)',
+            title: 'มังกรโบราณผู้ทำลายล้าง (Elder Dragon)',
+            icon: 'fa-skull-crossbones',
+            hp: 2100,
+            partHp: 800,
+            atk: 80,
+            def: 28,
+            zenny: 4200,
+            exp: 480,
+            ultimateName: 'Calamity Divebomb (พุ่งชนทลายปฐพี)',
+            statusEffect: null,
+            drops: [
+                { item: 'Nergigante Talon', chance: 0.85, min: 1, max: 3 },
+                { item: 'Nergigante Horn', chance: 0.7, min: 1, max: 2 },
+                { item: 'Elder Dragon Bone', chance: 0.7, min: 1, max: 2 }
+            ],
+            partDrop: 'Nergigante Horn'
+        }
+    ];
+
+    // ==================== ข้อมูลมอนสเตอร์ลานประลองมรณะ (ELDER & APEX ARENA) ====================
+    const ARENA_BOSSES = [
+        {
+            id: 'arena_velkhana',
+            isArena: true,
+            isElder: true,
+            rankReq: 5,
+            stars: '★★★★★★★★',
+            name: 'Arch-Tempered Velkhana (เวลคาน่าคลั่ง)',
+            title: 'ราชันย์เหมันต์ผู้แช่แข็งสรรพสิ่ง (Frost Elder Dragon)',
+            icon: 'fa-icicles',
+            hp: 3200,
+            partHp: 1100,
+            atk: 95,
+            def: 34,
+            zenny: 6500,
+            exp: 750,
+            arenaCoins: 2,
+            ultimateName: 'Absolute Zero Nova (วงแหวนน้ำแข็งศูนย์องศาสัมบูรณ์)',
+            statusEffect: 'frostbite',
+            mechanicDesc: 'เมื่อ HP ต่ำกว่า 50% จะสร้างเกราะน้ำแข็งเพิ่มพลังโจมตี และใช้ท่า Absolute Zero Nova ทำลายล้างวงกว้าง',
+            drops: [
+                { item: 'Velkhana Crystal', chance: 0.9, min: 1, max: 3 },
+                { item: 'Elder Dragon Bone', chance: 0.8, min: 1, max: 2 }
+            ],
+            partDrop: 'Velkhana Crystal'
+        },
+        {
+            id: 'arena_alatreon',
+            isArena: true,
+            isElder: true,
+            rankReq: 6,
+            stars: '★★★★★★★★★',
+            name: 'Alatreon (อลาทรีออน)',
+            title: 'มังกรดำผู้ควบคุมทุกธาตุ (Blazing Black Dragon)',
+            icon: 'fa-atom',
+            hp: 4400,
+            partHp: 1400,
+            atk: 112,
+            def: 38,
+            zenny: 9000,
+            exp: 1000,
+            arenaCoins: 3,
+            ultimateName: 'Escaton Judgment (คำพิพากษาแห่งธาตุทั้งปวง)',
+            statusEffect: 'burn',
+            mechanicDesc: 'สลับธาตุไฟ/น้ำแข็งทุก 3 เทิร์น และชาร์จท่า Escaton Judgment ที่ต้องรีบขัดจังหวะหรือตั้งรับเต็มกำลัง!',
+            drops: [
+                { item: 'Alatreon Riptalon', chance: 0.9, min: 1, max: 3 },
+                { item: 'Elder Dragon Bone', chance: 0.85, min: 2, max: 3 }
+            ],
+            partDrop: 'Alatreon Riptalon'
+        },
+        {
+            id: 'arena_fatalis',
+            isArena: true,
+            isElder: true,
+            rankReq: 7,
+            stars: '★★★★★★★★★★',
+            name: 'Fatalis (ฟาทาลิส - มังกรดำแห่งตำนาน)',
+            title: 'ภัยพิบัติผู้เผาผลาญอาณาจักรชเรด (The Black Dragon)',
+            icon: 'fa-fire',
+            hp: 6000,
+            partHp: 1800,
+            atk: 135,
+            def: 44,
+            zenny: 15000,
+            exp: 1800,
+            arenaCoins: 5,
+            ultimateName: 'Kingdom Raze Hellfire (เปลวเพลิงนรกล้างอาณาจักร)',
+            statusEffect: 'burn',
+            mechanicDesc: 'เข้าสู่โหมด Hellfire เมื่อเลือดลดต่ำกว่า 50% เปลวไฟสีฟ้าเผาไหม้รุนแรง ต้องทำลายเขา (Part Break) เพื่อลดความแรงท่าไม้ตาย!',
+            drops: [
+                { item: 'Fatalis Cortex', chance: 0.9, min: 1, max: 3 },
+                { item: 'Fatalis Horn', chance: 0.75, min: 1, max: 2 },
+                { item: 'Fatalis Evil Eye', chance: 0.45, min: 1, max: 1 }
+            ],
+            partDrop: 'Fatalis Evil Eye'
+        }
+    ];
+
+    // ข้อมูลเมนูโรงอาหาร
+    const CANTEEN_MENU = [
+        { id: 'meat_platter', name: 'ชุดสเต็กเนื้อย่างเหมียวเชฟ', cost: 120, atkBonus: 14, defBonus: 0, hpBonus: 25, icon: 'fa-drumstick-bite', desc: 'เพิ่มพลังโจมตี +14 และ Max HP +25 สำหรับเควสต์ถัดไป' },
+        { id: 'veggie_stew', name: 'สตูว์ผักและเห็ดป่าอบหม้อดิน', cost: 120, atkBonus: 0, defBonus: 14, hpBonus: 35, icon: 'fa-bowl-food', desc: 'เพิ่มพลังป้องกัน +14 และ Max HP +35 สำหรับเควสต์ถัดไป' },
+        { id: 'chef_choice', name: 'ชุดจักรพรรดินักล่า (Chef\'s Choice)', cost: 300, atkBonus: 22, defBonus: 18, hpBonus: 60, icon: 'fa-crown', desc: 'เพิ่ม Max HP +60, ATK +22 และ DEF +18 แบบจัดเต็ม!' }
+    ];
+
+    // ข้อมูลไอเทมและคำแปลภาษาไทย (ขยายเพิ่มครบทุกชนิด)
+    const ITEMS_INFO = {
+        'Potion': { th: 'โพชั่นฟื้นฟู (Potion)', type: 'consumable', desc: 'ฟื้นฟู HP 50 หน่วย', icon: 'fa-flask', color: 'text-emerald-400' },
+        'Mega Potion': { th: 'เมก้าโพชั่น (Mega Potion)', type: 'consumable', desc: 'ฟื้นฟู HP 120 หน่วย', icon: 'fa-prescription-bottle-medical', color: 'text-green-400' },
+        'Max Potion': { th: 'แม็กซ์โพชั่น (Max Potion)', type: 'consumable', desc: 'ฟื้นฟู HP เต็ม 100% ทันที!', icon: 'fa-heart-pulse', color: 'text-rose-400' },
+        'Ration': { th: 'เสบียงย่าง (Ration)', type: 'consumable', desc: 'ฟื้นฟู Stamina 60 หน่วย', icon: 'fa-bacon', color: 'text-amber-400' },
+        'Antidote': { th: 'ยาแก้พิษ (Antidote)', type: 'consumable', desc: 'รักษาสถานะติดพิษ (Poison) และฟื้น 15 HP', icon: 'fa-capsules', color: 'text-purple-400' },
+        'Nulberry': { th: 'ผลไม้แก้ธาตุ (Nulberry)', type: 'consumable', desc: 'ล้างสถานะไฟไหม้ น้ำแข็งเกาะ และสายฟ้า', icon: 'fa-apple-whole', color: 'text-cyan-400' },
+        'Flash Pod': { th: 'ระเบิดแสง (Flash Pod)', type: 'consumable', desc: 'ขัดจังหวะท่าชาร์จมอนสเตอร์ & ทำให้มึนงง 1 เทิร์น', icon: 'fa-sun', color: 'text-yellow-300' },
+        'Shock Trap': { th: 'กับดักสายฟ้า (Shock Trap)', type: 'consumable', desc: 'ช็อตมอนสเตอร์ทั่วไปให้หยุดนิ่ง 1 เทิร์น (ใช้กับ Elder Dragon ไม่ได้)', icon: 'fa-bolt-lightning', color: 'text-amber-300' },
+        'Mega Barrel Bomb': { th: 'ระเบิดถังใหญ่ (Mega Bomb)', type: 'consumable', desc: 'สร้างดาเมจระเบิด 220 หน่วย (แรง 2 เท่าหากมอนสเตอร์มึนงง!)', icon: 'fa-bomb', color: 'text-red-500' },
+        'Demondrug': { th: 'ยาเพิ่มพลังโจมตี (Demondrug)', type: 'consumable', desc: 'เพิ่มพลังโจมตี +20% ตลอดการต่อสู้', icon: 'fa-fire-flame-simple', color: 'text-orange-400' },
+        'Armorskin': { th: 'ยาเพิ่มพลังป้องกัน (Armorskin)', type: 'consumable', desc: 'เพิ่มพลังป้องกัน +25% ตลอดการต่อสู้', icon: 'fa-shield-virus', color: 'text-sky-400' },
+        'Herb': { th: 'สมุนไพร (Herb)', type: 'material', desc: 'วัตถุดิบสำหรับผสม Potion', icon: 'fa-leaf', color: 'text-lime-400' },
+        'Honey': { th: 'น้ำผึ้งป่า (Honey)', type: 'material', desc: 'ผสมกับ Potion เพื่อสร้าง Mega Potion', icon: 'fa-jar', color: 'text-amber-500' },
+        'Antidote Herb': { th: 'สมุนไพรแก้พิษ', type: 'material', desc: 'วัตถุดิบสำหรับผสมยาแก้พิษ Antidote', icon: 'fa-seedling', color: 'text-purple-300' },
+        'Flashbug': { th: 'แมลงแสง (Flashbug)', type: 'material', desc: 'วัตถุดิบสำหรับสร้าง Flash Pod', icon: 'fa-bug', color: 'text-yellow-400' },
+        'Thunderbug': { th: 'แมลงสายฟ้า (Thunderbug)', type: 'material', desc: 'วัตถุดิบสำหรับสร้างกับดัก Shock Trap', icon: 'fa-bolt', color: 'text-amber-300' },
+        'Gunpowder': { th: 'ดินปืนเข้มข้น (Gunpowder)', type: 'material', desc: 'วัตถุดิบสำหรับสร้างระเบิด Mega Barrel Bomb', icon: 'fa-explosion', color: 'text-red-400' },
+        'Iron Ore': { th: 'แร่เหล็ก (Iron Ore)', type: 'material', desc: 'แร่พื้นฐานสำหรับตีอาวุธ', icon: 'fa-gem', color: 'text-stone-300' },
+        'Machalite Ore': { th: 'แร่มาคาไลต์ (Machalite)', type: 'material', desc: 'แร่สีฟ้าหายากสำหรับอาวุธระดับกลาง', icon: 'fa-gem', color: 'text-sky-400' },
+        'Dragonite Ore': { th: 'แร่ดราก้อนไนต์ (Dragonite)', type: 'material', desc: 'แร่ล้ำค่าจากหุบเขาลึก', icon: 'fa-gem', color: 'text-emerald-400' },
+        'Silver Egg': { th: 'ไข่เงินกิลด์ (Silver Egg)', type: 'valuable', desc: 'ไอเทมมีค่า ขายได้ราคา 350 Zenny', icon: 'fa-egg', color: 'text-slate-200', sellPrice: 350 },
+        'Arena Coin': { th: 'เหรียญตราลานประลอง (Arena Coin)', type: 'part', desc: 'เหรียญเกียรติยศจากการพิชิตบอสใน Arena Mode', icon: 'fa-medal', color: 'text-amber-400' },
+        'Jagras Scale': { th: 'เกล็ด Great Jagras', type: 'part', desc: 'ชิ้นส่วนมอนสเตอร์สำหรับตีเกราะและอาวุธ', icon: 'fa-shield-virus', color: 'text-yellow-600' },
+        'Jagras Claw': { th: 'กรงเล็บ Great Jagras', type: 'part', desc: 'กรงเล็บแหลมคมของ Jagras', icon: 'fa-hand-fist', color: 'text-amber-600' },
+        'Kulu Plume': { th: 'ขนนกสีทอง Kulu-Ya-Ku', type: 'part', desc: 'ขนนกสวยงามน้ำหนักเบา', icon: 'fa-feather', color: 'text-amber-300' },
+        'Kulu Beak': { th: 'จะงอยปาก Kulu-Ya-Ku', type: 'part', desc: 'จะงอยปากแข็งแกร่งสำหรับตีอาวุธ', icon: 'fa-crow', color: 'text-orange-300' },
+        'Pukei Sac': { th: 'ถุงพิษ Pukei-Pukei', type: 'part', desc: 'อวัยวะกักเก็บพิษเข้มข้น', icon: 'fa-biohazard', color: 'text-purple-400' },
+        'Pukei Scale': { th: 'เกล็ดเขียว Pukei-Pukei', type: 'part', desc: 'เกล็ดยืดหยุ่นต้านทานพิษ', icon: 'fa-leaf', color: 'text-lime-400' },
+        'Anjanath Pelt': { th: 'หนังขน Anjanath', type: 'part', desc: 'หนังหนาต้านทานความร้อนสูง', icon: 'fa-rug', color: 'text-rose-400' },
+        'Anjanath Fang': { th: 'เขี้ยว Anjanath', type: 'part', desc: 'เขี้ยวขนาดใหญ่เปี่ยมพลังไฟ', icon: 'fa-tooth', color: 'text-red-400' },
+        'Barioth Pelt': { th: 'ขนสีขาว Barioth', type: 'part', desc: 'ขนหนากันความหนาวเหน็บ', icon: 'fa-snowflake', color: 'text-cyan-200' },
+        'Barioth Spike': { th: 'เขี้ยวดาบ Barioth', type: 'part', desc: 'เขี้ยวน้ำแข็งคมกริบดุจใบมีด', icon: 'fa-icicles', color: 'text-sky-300' },
+        'Zinogre Shockfur': { th: 'ขนประจุสายฟ้า Zinogre', type: 'part', desc: 'ขนสีทองที่กักเก็บพลังงานไฟฟ้าสถิต', icon: 'fa-bolt', color: 'text-yellow-300' },
+        'Zinogre Claw': { th: 'กรงเล็บสายฟ้า Zinogre', type: 'part', desc: 'กรงเล็บทรงพลังของหมาป่าอัสนี', icon: 'fa-hand-fist', color: 'text-amber-400' },
+        'Zinogre Horn': { th: 'เขา Zinogre', type: 'part', desc: 'เขาคู่ที่เปล่งประกายสายฟ้า', icon: 'fa-crown', color: 'text-yellow-400' },
+        'Rathalos Scale': { th: 'เกล็ดแดง Rathalos', type: 'part', desc: 'เกล็ดแข็งแกร่งของราชันย์เวหา', icon: 'fa-dragon', color: 'text-red-500' },
+        'Rathalos Wing': { th: 'ปีก Rathalos', type: 'part', desc: 'พังผืดปีกขนาดมหึมา', icon: 'fa-feather-pointed', color: 'text-orange-400' },
+        'Rathalos Ruby': { th: 'ทับทิม Rathalos (หายาก)', type: 'part', desc: 'อัญมณีล้ำค่าในตัว Rathalos', icon: 'fa-gem', color: 'text-rose-500' },
+        'Nergigante Talon': { th: 'กรงเล็บ Nergigante', type: 'part', desc: 'กรงเล็บทมิฬของมังกรโบราณ', icon: 'fa-skull', color: 'text-purple-400' },
+        'Nergigante Horn': { th: 'เขา Nergigante', type: 'part', desc: 'เขาเกลียวอันน่าเกรงขาม', icon: 'fa-crown', color: 'text-violet-400' },
+        'Elder Dragon Bone': { th: 'กระดูกมังกรโบราณ', type: 'part', desc: 'กระดูกศักดิ์สิทธิ์จากยุคบรรพกาล', icon: 'fa-bone', color: 'text-amber-200' },
+        'Velkhana Crystal': { th: 'ผลึกเหมันต์ Velkhana', type: 'part', desc: 'ผลึกน้ำแข็งบริสุทธิ์ที่ไม่ไม่มีวันละลาย', icon: 'fa-snowflake', color: 'text-cyan-300' },
+        'Alatreon Riptalon': { th: 'กรงเล็บทลายธาตุ Alatreon', type: 'part', desc: 'กรงเล็บที่แฝงพลังธาตุอันปั่นป่วน', icon: 'fa-atom', color: 'text-indigo-400' },
+        'Fatalis Cortex': { th: 'เกล็ดทมิฬ Fatalis', type: 'part', desc: 'เกล็ดที่แข็งแกร่งที่สุดในโลกหล้า', icon: 'fa-shield', color: 'text-red-500' },
+        'Fatalis Horn': { th: 'เขาปีศาจ Fatalis', type: 'part', desc: 'เขาแห่งมังกรดำในตำนาน', icon: 'fa-crown', color: 'text-amber-500' },
+        'Fatalis Evil Eye': { th: 'เนตรมาร Fatalis (ตำนาน)', type: 'part', desc: 'ดวงตาต้องคำสาปของมังกรดำผู้ทำลายล้าง', icon: 'fa-eye', color: 'text-rose-500' }
+    };
+
+    // รายชื่อ AI Hunters สำหรับระบบ Multiplayer Party และ World Chat
+    const AI_HUNTERS = [
+        { name: 'Kaito_TH', weapon: 'Long Sword', role: 'DPS', hr: 14 },
+        { name: 'NongMay_SNS', weapon: 'Hunting Horn', role: 'Support', hr: 9 },
+        { name: 'ZeusBlade', weapon: 'Great Sword', role: 'Heavy', hr: 22 },
+        { name: 'ArcheryPro', weapon: 'Bow', role: 'Ranged', hr: 7 },
+        { name: 'Bank_Hammer', weapon: 'Hammer', role: 'Stun', hr: 11 },
+        { name: 'Luna_Felyne', weapon: 'Dual Blades', role: 'DPS', hr: 18 }
+    ];
+
+    // ==================== 2. ระบบเสียงสังเคราะห์ (TONE.JS SOUND FX) ====================
+    const SoundFX = {
+        enabled: true,
+        synth: null,
+        init() {
+            if (!this.synth) {
+                this.synth = new Tone.PolySynth(Tone.Synth).toDestination();
+                this.synth.volume.value = -10;
+            }
+        },
+        play(type) {
+            if (!this.enabled) return;
+            try {
+                if (Tone.context.state !== 'running') Tone.start();
+                this.init();
+                const now = Tone.now();
+                if (type === 'attack') {
+                    this.synth.triggerAttackRelease(['C3', 'G2'], '16n', now);
+                } else if (type === 'skill') {
+                    this.synth.triggerAttackRelease(['A3', 'E4', 'A4'], '8n', now);
+                } else if (type === 'heal') {
+                    this.synth.triggerAttackRelease(['C5', 'E5', 'G5'], '8n', now);
+                } else if (type === 'hurt') {
+                    this.synth.triggerAttackRelease(['F2', 'B1'], '8n', now);
+                } else if (type === 'victory') {
+                    this.synth.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '4n', now);
+                } else if (type === 'craft') {
+                    this.synth.triggerAttackRelease(['E5', 'B5'], '16n', now);
+                }
+            } catch (e) {
+                // ป้องกัน error กรณีเบราว์เซอร์บล็อกเสียงก่อน user interaction
+            }
+        }
+    };
+
+    // ==================== 3. สถานะของเกม (GAME STATE) ====================
+    let gameState = null;
+    let combatState = null;
+    let chatInterval = null;
+
+    // โครงสร้างข้อมูลผู้เล่นเริ่มต้น
+    function createInitialState(hunterName, palicoName, weaponKey) {
+        return {
+            name: hunterName,
+            palico: palicoName,
+            weaponKey: weaponKey,
+            weaponTier: 0,
+            armorId: 'leather',
+            hr: 1,
+            exp: 0,
+            zenny: 1200,
+            hp: 100,
+            maxHp: 100,
+            stamina: 100,
+            maxStamina: 100,
+            foodBuff: null, // { name, atk, def, hp }
+            inventory: {
+                'Potion': 5,
+                'Mega Potion': 2,
+                'Ration': 3,
+                'Flash Pod': 2,
+                'Antidote': 2,
+                'Nulberry': 2,
+                'Shock Trap': 1,
+                'Mega Barrel Bomb': 1,
+                'Herb': 3,
+                'Iron Ore': 2
+            }
+        };
+    }
+
+    // คำนวณค่าสถานะรวม (Base + Weapon + Armor + Food Buff + Combat Buffs)
+    function getPlayerStats() {
+        const wData = WEAPONS_DATA[gameState.weaponKey];
+        const wTier = wData.tiers[gameState.weaponTier];
+        const armor = ARMORS_DATA.find(a => a.id === gameState.armorId) || ARMORS_DATA[0];
+        const buff = gameState.foodBuff || { atk: 0, def: 0, hp: 0 };
+
+        const baseMaxHp = 100 + (gameState.hr - 1) * 12 + armor.hpBonus + buff.hp;
+        let totalAtk = wTier.atk + buff.atk;
+        let totalDef = wData.baseDef + armor.def + buff.def;
+
+        // คำนวณบัฟชั่วคราวในฉากต่อสู้ (Demondrug / Armorskin / Perfect Evade Counter)
+        if (combatState) {
+            if (combatState.demonDrug) totalAtk = Math.round(totalAtk * 1.2);
+            if (combatState.armorSkin) totalDef = Math.round(totalDef * 1.25);
+            if (combatState.perfectEvadeBuff) totalAtk = Math.round(totalAtk * 1.35);
+        }
+
+        // โอกาสหลบหลีก (Base 55% + อาวุธ + ชุดเกราะ) จำกัดช่วง 20% - 92%
+        const dodgeChance = Math.max(20, Math.min(92, 55 + (wData.dodgeBonus || 0) + (armor.dodgeBonus || 0)));
+        // โอกาสสตั๊นขัดจังหวะ (Base 35% + อาวุธ + ชุดเกราะ) จำกัดช่วง 15% - 90%
+        const stunChance = Math.max(15, Math.min(90, 35 + (wData.stunBonus || 0) + (armor.stunBonus || 0)));
+
+        return {
+            maxHp: baseMaxHp,
+            atk: totalAtk,
+            def: totalDef,
+            dodgeChance: dodgeChance,
+            stunChance: stunChance,
+            weaponName: wTier.name,
+            armorName: armor.name,
+            armorSkill: armor.skillText,
+            weaponData: wData
+        };
+    }
+
+    // บันทึกและโหลดข้อมูลจาก LocalStorage
+    function saveGame() {
+        if (gameState) {
+            localStorage.setItem('mh_frontier_save_v1', JSON.stringify(gameState));
+        }
+    }
+
+    function loadGame() {
+        const raw = localStorage.getItem('mh_frontier_save_v1');
+        if (raw) {
+            try {
+                gameState = JSON.parse(raw);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // ==================== 4. ระบบ UI UTILITIES & NOTIFICATIONS ====================
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        const colors = {
+            info: 'border-amber-500 bg-stone-900/95 text-amber-200',
+            success: 'border-emerald-500 bg-emerald-950/95 text-emerald-200',
+            danger: 'border-red-500 bg-red-950/95 text-red-200'
+        };
+        const icons = {
+            info: 'fa-circle-info text-amber-400',
+            success: 'fa-circle-check text-emerald-400',
+            danger: 'fa-triangle-exclamation text-red-400'
+        };
+
+        toast.className = `pointer-events-auto border-l-4 ${colors[type]} px-4 py-3 rounded-lg shadow-xl text-xs sm:text-sm font-kanit flex items-center gap-2.5 transform transition-all duration-300 translate-x-0`;
+        toast.innerHTML = `<i class="fa-solid ${icons[type]} text-base"></i><span>${message}</span>`;
+
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(20px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3200);
+    }
+
+    function showConfirmModal(title, message, onConfirm) {
+        const modal = document.getElementById('confirm-modal');
+        document.getElementById('modal-title').textContent = title;
+        document.getElementById('modal-message').textContent = message;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        const cleanup = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        document.getElementById('modal-cancel').onclick = cleanup;
+        document.getElementById('modal-confirm').onclick = () => {
+            cleanup();
+            onConfirm();
+        };
+    }
+
+    function spawnDamagePopup(targetElementId, text, colorClass = 'text-amber-300') {
+        const target = document.getElementById(targetElementId);
+        if (!target) return;
+        const popup = document.createElement('div');
+        popup.className = `damage-popup text-lg sm:text-2xl ${colorClass}`;
+        popup.textContent = text;
+        popup.style.left = `${35 + Math.random() * 30}%`;
+        popup.style.top = '25%';
+        target.appendChild(popup);
+        setTimeout(() => popup.remove(), 900);
+    }
+
+    // ==================== 5. หน้าสร้างตัวละคร (CHARACTER CREATION LOGIC) ====================
+    function initCharacterCreation() {
+        const selector = document.getElementById('weapon-selector');
+        selector.innerHTML = '';
+
+        Object.values(WEAPONS_DATA).forEach((w, idx) => {
+            const label = document.createElement('label');
+            label.className = 'cursor-pointer block';
+            label.innerHTML = `
+                <input type="radio" name="starting_weapon" value="${w.id}" class="peer sr-only" ${idx === 0 ? 'checked' : ''}>
+                <div class="h-full p-3.5 rounded-xl bg-stone-900/90 border border-stone-700 peer-checked:border-amber-500 peer-checked:bg-amber-950/30 hover:border-stone-500 transition">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="font-kanit font-bold text-amber-300 text-sm flex items-center gap-2">
+                            <i class="fa-solid ${w.icon} text-amber-400"></i> ${w.name}
+                        </span>
+                    </div>
+                    <div class="flex gap-3 text-[11px] text-stone-300 mb-1.5 font-kanit">
+                        <span class="text-red-400">ATK: ${w.baseAtk}</span>
+                        <span class="text-sky-400">DEF: +${w.baseDef}</span>
+                    </div>
+                    <p class="text-[11px] text-stone-400 leading-relaxed">${w.desc}</p>
+                    <div class="mt-2 pt-1.5 border-t border-stone-800 text-[11px] text-amber-200/80">
+                        <i class="fa-solid fa-sparkles text-amber-400 mr-1"></i>ท่าไม้ตาย: ${w.skillName}
+                    </div>
+                </div>
+            `;
+            selector.appendChild(label);
+        });
+
+        // ปุ่มสุ่มตัวละคร
+        document.getElementById('btn-random-char').onclick = () => {
+            const names = ['Arthur', 'Kaito', 'Somsak', 'Leon', 'Valkyrie', 'Ryuji', 'Anya', 'Taro'];
+            const palicos = ['เจ้าส้ม', 'Mochi', 'Kuro', 'ถุงทอง', 'Meowster', 'เสือโคร่ง', 'Neko'];
+            const wKeys = Object.keys(WEAPONS_DATA);
+
+            document.getElementById('input-hunter-name').value = names[Math.floor(Math.random() * names.length)];
+            document.getElementById('input-palico-name').value = palicos[Math.floor(Math.random() * palicos.length)];
+
+            const randW = wKeys[Math.floor(Math.random() * wKeys.length)];
+            const radio = document.querySelector(`input[name="starting_weapon"][value="${randW}"]`);
+            if (radio) radio.checked = true;
+        };
+
+        // ยืนยันสร้างตัวละคร
+        document.getElementById('create-form').onsubmit = (e) => {
+            e.preventDefault();
+            const hName = document.getElementById('input-hunter-name').value.trim() || 'Hunter';
+            const pName = document.getElementById('input-palico-name').value.trim() || 'Mochi';
+            const wKey = document.querySelector('input[name="starting_weapon"]:checked').value;
+
+            gameState = createInitialState(hName, pName, wKey);
+            saveGame();
+            SoundFX.play('victory');
+            enterMainGame();
+            addWorldChat('SYSTEM', `ยินดีต้อนรับนักล่าหน้าใหม่ "${hName}" และคู่หู "${pName}" เข้าสู่หมู่บ้าน Astera!`, 'system');
+        };
+    }
+
+    // ==================== 6. ระบบหน้าจอหลักและอัปเดต UI (HUB & HUD) ====================
+    function enterMainGame() {
+        document.getElementById('screen-create').classList.add('hidden');
+        document.getElementById('screen-game').classList.remove('hidden');
+
+        updateAllUI();
+        startWorldChatSimulation();
+    }
+
+    function updateAllUI() {
+        const stats = getPlayerStats();
+        gameState.maxHp = stats.maxHp;
+        if (gameState.hp > gameState.maxHp) gameState.hp = gameState.maxHp;
+
+        // อัปเดต Top HUD
+        document.getElementById('hud-name').textContent = gameState.name;
+        document.getElementById('hud-hr').textContent = `HR ${gameState.hr}`;
+        document.getElementById('hud-palico').textContent = gameState.palico;
+        document.getElementById('hud-zenny').textContent = gameState.zenny.toLocaleString();
+        document.getElementById('hud-weapon-icon').className = `fa-solid ${stats.weaponData.icon}`;
+        document.getElementById('hud-weapon-name').textContent = stats.weaponName;
+        document.getElementById('hud-armor-name').textContent = stats.armorName;
+        document.getElementById('hud-atk').textContent = stats.atk;
+        document.getElementById('hud-def').textContent = stats.def;
+
+        // แสดง Food Buff ถ้ามี
+        const buffBadge = document.getElementById('hud-buff-badge');
+        if (gameState.foodBuff) {
+            buffBadge.classList.remove('hidden');
+            document.getElementById('hud-buff-text').textContent = gameState.foodBuff.name;
+        } else {
+            buffBadge.classList.add('hidden');
+        }
+
+        // หลอด HP & Stamina
+        const hpPct = Math.max(0, Math.min(100, (gameState.hp / gameState.maxHp) * 100));
+        document.getElementById('hud-hp-text').textContent = `${Math.ceil(gameState.hp)} / ${gameState.maxHp}`;
+        document.getElementById('hud-hp-bar').style.width = `${hpPct}%`;
+
+        const stamPct = Math.max(0, Math.min(100, (gameState.stamina / gameState.maxStamina) * 100));
+        document.getElementById('hud-stam-text').textContent = `${Math.ceil(gameState.stamina)} / ${gameState.maxStamina}`;
+        document.getElementById('hud-stam-bar').style.width = `${stamPct}%`;
+
+        // จำนวนไอเทมในกระเป๋า
+        const totalItems = Object.values(gameState.inventory).reduce((a, b) => a + b, 0);
+        document.getElementById('inv-count').textContent = totalItems;
+
+        const arenaCoins = gameState.inventory['Arena Coin'] || 0;
+        const coinEl = document.getElementById('arena-coin-text');
+        if (coinEl) coinEl.textContent = arenaCoins;
+
+        // อัปเดตแต่ละแท็บ
+        renderQuestsTab();
+        renderArenaTab();
+        renderSmithyTab();
+        renderCanteenTab();
+        renderExpeditionTab();
+        renderInventoryTab();
+        saveGame();
+    }
+
+    // ระบบสลับแท็บเมนู
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.tab;
+            document.querySelectorAll('.nav-tab').forEach(b => {
+                b.classList.remove('border-amber-500', 'bg-amber-950/40', 'text-amber-300');
+            });
+            btn.classList.add('border-amber-500', 'bg-amber-950/40', 'text-amber-300');
+
+            document.querySelectorAll('.tab-content').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(`tab-${target}`).classList.remove('hidden');
+        });
+    });
+
+    // ==================== 7. แท็บกระดานเควสต์ (QUEST BOARD) ====================
+    function renderQuestsTab() {
+        const expNeeded = gameState.hr * 100;
+        document.getElementById('quest-exp-text').textContent = `${gameState.exp} / ${expNeeded}`;
+
+        const list = document.getElementById('quest-list');
+        list.innerHTML = '';
+
+        QUESTS_DATA.forEach(q => {
+            const locked = gameState.hr < q.rankReq;
+            const card = document.createElement('div');
+            card.className = `p-4 rounded-xl border ${locked ? 'bg-stone-950/40 border-stone-800 opacity-60' : 'bg-stone-900/80 border-stone-700 hover:border-amber-600/60'} flex flex-col justify-between transition`;
+
+            const dropNames = q.drops.map(d => ITEMS_INFO[d.item]?.th.split(' ')[0] || d.item).join(', ');
+
+            card.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-lg bg-red-950/70 border border-red-700/50 flex items-center justify-center text-red-400 text-lg">
+                                <i class="fa-solid ${q.icon}"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-kanit font-bold text-stone-100 text-sm sm:text-base">${q.name}</h4>
+                                <span class="text-xs text-amber-400 tracking-widest">${q.stars}</span>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[11px] font-kanit shrink-0 ${locked ? 'bg-red-950 text-red-300' : 'bg-stone-800 text-stone-300'}">
+                            ต้องการ HR ${q.rankReq}
+                        </span>
+                    </div>
+                    <p class="text-xs text-stone-400 mt-2">${q.title}</p>
+                    <div class="mt-2.5 text-xs space-y-1 bg-stone-950/60 p-2.5 rounded-lg border border-stone-800/80">
+                        <div class="flex justify-between">
+                            <span class="text-stone-400">รางวัล:</span>
+                            <span class="text-yellow-300 font-kanit font-semibold">${q.zenny.toLocaleString()} z | +${q.exp} EXP</span>
+                        </div>
+                        <div class="text-stone-400 truncate">
+                            วัตถุดิบ: <span class="text-stone-300">${dropNames}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3 pt-2.5 border-t border-stone-800 grid grid-cols-2 gap-2">
+                    <button ${locked ? 'disabled' : ''} onclick="startHunt('${q.id}', false, false)" class="btn-guild py-2 px-2 rounded-lg text-xs font-kanit font-medium flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-user"></i> ล่าคนเดียว (Solo)
+                    </button>
+                    <button ${locked ? 'disabled' : ''} onclick="startHunt('${q.id}', true, false)" class="btn-gold py-2 px-2 rounded-lg text-xs font-kanit font-medium flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-users"></i> ปาร์ตี้ออนไลน์ (SOS)
+                    </button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    // ==================== 7.5 แท็บลานประลองมรณะ (ELDER & APEX ARENA) ====================
+    function renderArenaTab() {
+        const list = document.getElementById('arena-list');
+        if (!list) return;
+        list.innerHTML = '';
+
+        ARENA_BOSSES.forEach(boss => {
+            const locked = gameState.hr < boss.rankReq;
+            const dropNames = boss.drops.map(d => ITEMS_INFO[d.item]?.th.split(' ')[0] || d.item).join(', ');
+
+            const card = document.createElement('div');
+            card.className = `p-4 rounded-xl border ${locked ? 'bg-stone-950/40 border-stone-800 opacity-60' : 'bg-gradient-to-r from-rose-950/40 via-stone-900 to-stone-950 border-rose-700/60 hover:border-amber-500'} transition`;
+            card.innerHTML = `
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-start gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-rose-950 border border-rose-500/60 flex items-center justify-center text-rose-400 text-2xl shrink-0 shadow-lg">
+                            <i class="fa-solid ${boss.icon}"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h4 class="font-kanit font-bold text-rose-300 text-base sm:text-lg">${boss.name}</h4>
+                                <span class="px-2 py-0.5 rounded text-[11px] font-kanit ${locked ? 'bg-red-950 text-red-300' : 'bg-rose-900/70 text-rose-200'}">ต้องการ HR ${boss.rankReq}</span>
+                            </div>
+                            <div class="text-xs text-amber-400 tracking-wider mt-0.5">${boss.stars} — ${boss.title}</div>
+                            <p class="text-xs text-stone-300 mt-1.5 bg-black/40 p-2 rounded-lg border border-rose-900/40">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i><strong>กลไกบอส:</strong> ${boss.mechanicDesc}
+                            </p>
+                            <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                                <span class="text-yellow-300 font-kanit font-semibold"><i class="fa-solid fa-coins mr-1"></i>${boss.zenny.toLocaleString()} z + ${boss.arenaCoins} เหรียญอารีน่า</span>
+                                <span class="text-stone-400">ดรอป: <strong class="text-stone-200">${dropNames}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex sm:flex-col gap-2 shrink-0 sm:w-40">
+                        <button ${locked ? 'disabled' : ''} onclick="startHunt('${boss.id}', false, true)" class="btn-danger flex-1 py-2 px-3 rounded-lg text-xs font-kanit font-semibold flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-skull"></i> ท้าทาย Solo
+                        </button>
+                        <button ${locked ? 'disabled' : ''} onclick="startHunt('${boss.id}', true, true)" class="btn-gold flex-1 py-2 px-3 rounded-lg text-xs font-kanit font-semibold flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-users"></i> ปาร์ตี้ SOS
+                        </button>
+                    </div>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    // ==================== 8. แท็บโรงตีเหล็ก (SMITHY) ====================
+    function renderSmithyTab() {
+        const wData = WEAPONS_DATA[gameState.weaponKey];
+        const currTier = wData.tiers[gameState.weaponTier];
+        const nextTier = wData.tiers[gameState.weaponTier + 1];
+
+        const wBox = document.getElementById('smithy-weapon-box');
+        if (!nextTier) {
+            wBox.innerHTML = `
+                <div class="p-4 rounded-xl bg-amber-950/20 border border-amber-500/40 text-center">
+                    <i class="fa-solid fa-crown text-3xl text-amber-400 mb-2"></i>
+                    <div class="font-kanit font-bold text-amber-300">${currTier.name}</div>
+                    <div class="text-xs text-stone-400 mt-1">อัปเกรดอาวุธถึงระดับสูงสุดในตำนานแล้ว! (ATK: ${currTier.atk})</div>
+                </div>
+            `;
+        } else {
+            let canCraft = gameState.zenny >= nextTier.cost;
+            let reqHtml = '';
+            for (const [mat, qty] of Object.entries(nextTier.req)) {
+                const have = gameState.inventory[mat] || 0;
+                if (have < qty) canCraft = false;
+                const matName = ITEMS_INFO[mat]?.th || mat;
+                reqHtml += `
+                    <div class="flex justify-between text-xs py-1 border-b border-stone-800/70">
+                        <span class="text-stone-300">${matName}</span>
+                        <span class="font-kanit ${have >= qty ? 'text-emerald-400' : 'text-red-400'}">${have} / ${qty}</span>
+                    </div>
+                `;
+            }
+
+            wBox.innerHTML = `
+                <div class="p-3.5 rounded-xl bg-stone-900 border border-stone-700">
+                    <div class="text-xs text-stone-400">อาวุธปัจจุบัน: <strong class="text-stone-200">${currTier.name}</strong> (ATK ${currTier.atk})</div>
+                    <div class="my-2 text-center text-amber-500"><i class="fa-solid fa-arrow-down"></i></div>
+                    <div class="p-3 rounded-lg bg-amber-950/30 border border-amber-600/40">
+                        <div class="font-kanit font-bold text-amber-300 text-base">${nextTier.name}</div>
+                        <div class="text-xs text-red-400 font-kanit font-semibold mt-0.5">พลังโจมตี: ${currTier.atk} ➔ ${nextTier.atk} (+${nextTier.atk - currTier.atk})</div>
+                    </div>
+                    <div class="mt-3 space-y-1">
+                        <div class="text-xs font-kanit text-stone-400 mb-1">วัตถุดิบและค่าตีเหล็ก:</div>
+                        ${reqHtml}
+                        <div class="flex justify-between text-xs py-1">
+                            <span class="text-stone-300">ค่าตีเหล็ก (Zenny)</span>
+                            <span class="font-kanit ${gameState.zenny >= nextTier.cost ? 'text-yellow-300' : 'text-red-400'}">${nextTier.cost.toLocaleString()} z</span>
+                        </div>
+                    </div>
+                    <button ${canCraft ? '' : 'disabled'} onclick="upgradeWeapon()" class="btn-gold w-full mt-3 py-2.5 rounded-lg font-kanit text-sm font-semibold">
+                        <i class="fa-solid fa-hammer mr-1.5"></i>ตีบวกอัปเกรดอาวุธ
+                    </button>
+                </div>
+            `;
+        }
+
+        // ส่วนชุดเกราะ
+        const aBox = document.getElementById('smithy-armor-box');
+        aBox.innerHTML = '';
+        ARMORS_DATA.forEach(armor => {
+            const isEquipped = gameState.armorId === armor.id;
+            let canCraft = gameState.zenny >= armor.cost;
+            let reqHtml = '';
+            for (const [mat, qty] of Object.entries(armor.req)) {
+                const have = gameState.inventory[mat] || 0;
+                if (have < qty) canCraft = false;
+                const matName = ITEMS_INFO[mat]?.th.split(' ')[0] || mat;
+                reqHtml += `<span class="text-[11px] px-1.5 py-0.5 rounded bg-stone-950 border ${have >= qty ? 'border-emerald-800 text-emerald-300' : 'border-red-900 text-red-300'}">${matName} ${have}/${qty}</span> `;
+            }
+
+            const div = document.createElement('div');
+            div.className = `p-3 rounded-xl border ${isEquipped ? 'bg-sky-950/30 border-sky-500/60' : 'bg-stone-900 border-stone-700'}`;
+            div.innerHTML = `
+                <div class="flex justify-between items-start gap-2">
+                    <div>
+                        <div class="font-kanit font-bold text-sm ${isEquipped ? 'text-sky-300' : 'text-stone-200'}">${armor.name}</div>
+                        <div class="text-xs text-stone-400 mt-0.5">DEF: <strong class="text-sky-400">${armor.def}</strong> | Max HP: <strong class="text-emerald-400">+${armor.hpBonus}</strong></div>
+                        <div class="text-[11px] text-amber-300/90 mt-0.5"><i class="fa-solid fa-sparkles mr-1"></i>${armor.skillText}</div>
+                    </div>
+                    ${isEquipped
+                        ? '<span class="px-2 py-0.5 rounded text-[11px] bg-sky-900 text-sky-200 font-kanit shrink-0">สวมใส่อยู่</span>'
+                        : `<button ${canCraft ? '' : 'disabled'} onclick="craftArmor('${armor.id}')" class="btn-guild px-3 py-1.5 rounded-lg text-xs font-kanit shrink-0">สร้าง (${armor.cost} z)</button>`
+                    }
+                </div>
+                ${!isEquipped && reqHtml ? `<div class="mt-2 flex flex-wrap gap-1">${reqHtml}</div>` : ''}
+            `;
+            aBox.appendChild(div);
+        });
+    }
+
+    window.upgradeWeapon = function() {
+        const wData = WEAPONS_DATA[gameState.weaponKey];
+        const nextTier = wData.tiers[gameState.weaponTier + 1];
+        if (!nextTier || gameState.zenny < nextTier.cost) return;
+
+        for (const [mat, qty] of Object.entries(nextTier.req)) {
+            if ((gameState.inventory[mat] || 0) < qty) return;
+        }
+
+        gameState.zenny -= nextTier.cost;
+        for (const [mat, qty] of Object.entries(nextTier.req)) {
+            gameState.inventory[mat] -= qty;
+            if (gameState.inventory[mat] <= 0) delete gameState.inventory[mat];
+        }
+
+        gameState.weaponTier++;
+        SoundFX.play('craft');
+        showToast(`ตีบวกสำเร็จ! ได้รับ ${nextTier.name}`, 'success');
+        updateAllUI();
+    };
+
+    window.craftArmor = function(armorId) {
+        const armor = ARMORS_DATA.find(a => a.id === armorId);
+        if (!armor || gameState.zenny < armor.cost) return;
+
+        for (const [mat, qty] of Object.entries(armor.req)) {
+            if ((gameState.inventory[mat] || 0) < qty) return;
+        }
+
+        gameState.zenny -= armor.cost;
+        for (const [mat, qty] of Object.entries(armor.req)) {
+            gameState.inventory[mat] -= qty;
+            if (gameState.inventory[mat] <= 0) delete gameState.inventory[mat];
+        }
+
+        gameState.armorId = armor.id;
+        const stats = getPlayerStats();
+        gameState.hp = stats.maxHp;
+        SoundFX.play('craft');
+        showToast(`สร้างและสวมใส่ ${armor.name} เรียบร้อย!`, 'success');
+        updateAllUI();
+    };
+
+    // ==================== 9. แท็บโรงอาหาร (CANTEEN) ====================
+    function renderCanteenTab() {
+        const box = document.getElementById('canteen-menu');
+        box.innerHTML = '';
+
+        CANTEEN_MENU.forEach(meal => {
+            const canAfford = gameState.zenny >= meal.cost;
+            const isActive = gameState.foodBuff && gameState.foodBuff.id === meal.id;
+
+            const card = document.createElement('div');
+            card.className = `p-4 rounded-xl border ${isActive ? 'bg-emerald-950/30 border-emerald-500' : 'bg-stone-900/90 border-stone-700'} flex flex-col justify-between`;
+            card.innerHTML = `
+                <div>
+                    <div class="w-11 h-11 rounded-xl bg-amber-950/80 border border-amber-600/40 flex items-center justify-center text-amber-400 text-xl mb-3">
+                        <i class="fa-solid ${meal.icon}"></i>
+                    </div>
+                    <h4 class="font-kanit font-bold text-amber-300 text-base">${meal.name}</h4>
+                    <p class="text-xs text-stone-400 mt-1.5 leading-relaxed">${meal.desc}</p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-stone-800">
+                    <button ${(!canAfford || isActive) ? 'disabled' : ''} onclick="eatMeal('${meal.id}')" class="${isActive ? 'btn-guild' : 'btn-gold'} w-full py-2 rounded-lg font-kanit text-xs font-semibold">
+                        ${isActive ? '<i class="fa-solid fa-check mr-1"></i>รับประทานแล้ว' : `<i class="fa-solid fa-coins mr-1"></i>สั่งอาหาร (${meal.cost} z)`}
+                    </button>
+                </div>
+            `;
+            box.appendChild(card);
+        });
+    }
+
+    window.eatMeal = function(mealId) {
+        const meal = CANTEEN_MENU.find(m => m.id === mealId);
+        if (!meal || gameState.zenny < meal.cost) return;
+
+        gameState.zenny -= meal.cost;
+        gameState.foodBuff = {
+            id: meal.id,
+            name: meal.name.split(' ')[0],
+            atk: meal.atkBonus,
+            def: meal.defBonus,
+            hp: meal.hpBonus
+        };
+
+        const stats = getPlayerStats();
+        gameState.hp = stats.maxHp;
+        gameState.stamina = gameState.maxStamina;
+
+        SoundFX.play('heal');
+        showToast(`อร่อยเหาะ! ได้รับบัฟ ${meal.name} และฟื้นฟู HP/Stamina เต็ม!`, 'success');
+        updateAllUI();
+    };
+
+    // ==================== 10. แท็บออกสำรวจ & คราฟต์ (EXPEDITION & CRAFTING) ====================
+    function renderExpeditionTab() {
+        const zones = [
+            { id: 'forest', name: 'ป่าโบราณ (Ancient Forest)', cost: 20, desc: 'สมุนไพร, น้ำผึ้ง, สมุนไพรแก้พิษ และแมลงแสง', loot: ['Herb', 'Honey', 'Antidote Herb', 'Flashbug'] },
+            { id: 'wildspire', name: 'หุบเขาแร่ (Wildspire Waste)', cost: 25, desc: 'แร่เหล็ก, แร่มาคาไลต์, แมลงสายฟ้า และไข่เงินกิลด์', loot: ['Iron Ore', 'Machalite Ore', 'Thunderbug', 'Silver Egg'] },
+            { id: 'recess', name: 'หุบเขาผลึกมังกร (Elder\'s Recess)', cost: 30, desc: 'แร่ดราก้อนไนต์, ดินปืนเข้มข้น และแร่มาคาไลต์', loot: ['Dragonite Ore', 'Gunpowder', 'Machalite Ore', 'Silver Egg'] }
+        ];
+
+        const zBox = document.getElementById('expedition-zones');
+        zBox.innerHTML = '';
+        zones.forEach(z => {
+            const canGo = gameState.stamina >= z.cost;
+            const div = document.createElement('div');
+            div.className = 'p-3.5 rounded-xl bg-stone-900/90 border border-stone-700 flex flex-col justify-between';
+            div.innerHTML = `
+                <div>
+                    <h4 class="font-kanit font-bold text-emerald-300 text-sm">${z.name}</h4>
+                    <p class="text-[11px] text-stone-400 mt-1">${z.desc}</p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-stone-800 flex items-center justify-between gap-2">
+                    <button onclick="restAtCamp()" class="btn-guild px-2.5 py-1.5 rounded-lg text-[11px] font-kanit" title="พักผ่อนฟื้นฟู HP & Stamina">
+                        <i class="fa-solid fa-campground text-amber-400 mr-1"></i>พักแคมป์
+                    </button>
+                    <button ${canGo ? '' : 'disabled'} onclick="gatherZone('${z.id}', ${z.cost}, ${JSON.stringify(z.loot).replace(/"/g, '&quot;')})" class="btn-gold px-3 py-1.5 rounded-lg text-[11px] font-kanit font-semibold">
+                        <i class="fa-solid fa-person-hiking mr-1"></i>สำรวจ (-${z.cost})
+                    </button>
+                </div>
+            `;
+            zBox.appendChild(div);
+        });
+
+        // รายการผสมไอเทม
+        const recipes = [
+            { out: 'Potion', req: { 'Herb': 1 }, desc: 'สมุนไพร 1 ➔ โพชั่นฟื้นฟู 1 ขวด' },
+            { out: 'Mega Potion', req: { 'Potion': 1, 'Honey': 1 }, desc: 'Potion 1 + Honey 1 ➔ เมก้าโพชั่น 1 ขวด' },
+            { out: 'Max Potion', req: { 'Mega Potion': 1, 'Dragonite Ore': 1 }, desc: 'Mega Potion 1 + Dragonite 1 ➔ แม็กซ์โพชั่น' },
+            { out: 'Antidote', req: { 'Antidote Herb': 1 }, desc: 'สมุนไพรแก้พิษ 1 ➔ ยาแก้พิษ 1 ขวด' },
+            { out: 'Flash Pod', req: { 'Flashbug': 1 }, desc: 'แมลงแสง 1 ➔ ระเบิดแสง 1 ลูก' },
+            { out: 'Shock Trap', req: { 'Thunderbug': 1, 'Iron Ore': 1 }, desc: 'Thunderbug 1 + Iron Ore 1 ➔ กับดักสายฟ้า' },
+            { out: 'Mega Barrel Bomb', req: { 'Gunpowder': 1, 'Fire Herb': 0 }, reqOverride: { 'Gunpowder': 1, 'Iron Ore': 1 }, desc: 'Gunpowder 1 + Iron Ore 1 ➔ ระเบิดถังใหญ่' },
+            { out: 'Demondrug', req: { 'Honey': 1, 'Machalite Ore': 1 }, desc: 'Honey 1 + Machalite 1 ➔ ยาเพิ่มพลังโจมตี' }
+        ];
+
+        const cList = document.getElementById('crafting-list');
+        cList.innerHTML = '';
+        recipes.forEach(r => {
+            const actualReq = r.reqOverride || r.req;
+            let canCraft = true;
+            for (const [k, v] of Object.entries(actualReq)) {
+                if ((gameState.inventory[k] || 0) < v) canCraft = false;
+            }
+            const info = ITEMS_INFO[r.out];
+            const cleanRecipe = { out: r.out, req: actualReq };
+            const div = document.createElement('div');
+            div.className = 'p-2.5 rounded-lg bg-stone-900 border border-stone-800 flex items-center justify-between gap-2';
+            div.innerHTML = `
+                <div>
+                    <div class="font-kanit font-semibold text-xs text-stone-200">${info.th}</div>
+                    <div class="text-[11px] text-stone-400">${r.desc}</div>
+                </div>
+                <button ${canCraft ? '' : 'disabled'} onclick='craftItem(${JSON.stringify(cleanRecipe)})' class="btn-guild px-3 py-1.5 rounded-lg text-xs font-kanit shrink-0">
+                    ผสมไอเทม
+                </button>
+            `;
+            cList.appendChild(div);
+        });
+    }
+
+    window.gatherZone = function(zoneId, cost, pool) {
+        if (gameState.stamina < cost) return;
+
+        gameState.stamina -= cost;
+        const found1 = pool[Math.floor(Math.random() * pool.length)];
+        const found2 = pool[Math.floor(Math.random() * pool.length)];
+
+        gameState.inventory[found1] = (gameState.inventory[found1] || 0) + 1;
+        gameState.inventory[found2] = (gameState.inventory[found2] || 0) + 1;
+
+        SoundFX.play('craft');
+        showToast(`สำรวจสำเร็จ! พบ ${ITEMS_INFO[found1].th.split(' ')[0]} และ ${ITEMS_INFO[found2].th.split(' ')[0]}`, 'success');
+        updateAllUI();
+    };
+
+    window.restAtCamp = function() {
+        const stats = getPlayerStats();
+        gameState.hp = stats.maxHp;
+        gameState.stamina = gameState.maxStamina;
+        SoundFX.play('heal');
+        showToast('พักผ่อนที่แคมป์หมู่บ้าน ฟื้นฟู HP และ Stamina เต็ม 100%!', 'info');
+        updateAllUI();
+    };
+
+    window.craftItem = function(recipe) {
+        for (const [k, v] of Object.entries(recipe.req)) {
+            if ((gameState.inventory[k] || 0) < v) return;
+        }
+        for (const [k, v] of Object.entries(recipe.req)) {
+            gameState.inventory[k] -= v;
+            if (gameState.inventory[k] <= 0) delete gameState.inventory[k];
+        }
+        gameState.inventory[recipe.out] = (gameState.inventory[recipe.out] || 0) + 1;
+        SoundFX.play('craft');
+        showToast(`ผสม ${ITEMS_INFO[recipe.out].th} สำเร็จ!`, 'success');
+        updateAllUI();
+    };
+
+    // ==================== 11. แท็บกระเป๋า (INVENTORY) ====================
+    function renderInventoryTab() {
+        const grid = document.getElementById('inventory-grid');
+        grid.innerHTML = '';
+
+        const entries = Object.entries(gameState.inventory).filter(([, qty]) => qty > 0);
+        if (entries.length === 0) {
+            grid.innerHTML = '<div class="col-span-full text-center text-stone-500 py-10 text-sm">กระเป๋าว่างเปล่า ออกไปล่ามอนสเตอร์หรือสำรวจเพื่อหาไอเทมกันเถอะ!</div>';
+            return;
+        }
+
+        entries.forEach(([key, qty]) => {
+            const info = ITEMS_INFO[key] || { th: key, desc: 'ไอเทมทั่วไป', icon: 'fa-box', color: 'text-stone-300' };
+            const div = document.createElement('div');
+            div.className = 'p-3 rounded-xl bg-stone-900/90 border border-stone-800 flex flex-col justify-between';
+            div.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-start">
+                        <i class="fa-solid ${info.icon} ${info.color} text-lg"></i>
+                        <span class="px-2 py-0.5 rounded bg-stone-950 text-amber-300 font-kanit text-xs font-bold">x${qty}</span>
+                    </div>
+                    <div class="font-kanit font-semibold text-xs text-stone-200 mt-2">${info.th}</div>
+                    <p class="text-[11px] text-stone-400 mt-0.5 leading-snug">${info.desc}</p>
+                </div>
+            `;
+            grid.appendChild(div);
+        });
+    }
+
+    document.getElementById('btn-sell-junk').onclick = () => {
+        const eggs = gameState.inventory['Silver Egg'] || 0;
+        if (eggs <= 0) {
+            showToast('คุณไม่มีไข่เงินกิลด์ (Silver Egg) สำหรับขาย', 'info');
+            return;
+        }
+        const earn = eggs * 300;
+        delete gameState.inventory['Silver Egg'];
+        gameState.zenny += earn;
+        SoundFX.play('heal');
+        showToast(`ขาย Silver Egg ${eggs} ชิ้น ได้รับ ${earn.toLocaleString()} Zenny!`, 'success');
+        updateAllUI();
+    };
+
+    // ==================== 12. ระบบการต่อสู้ (TACTICAL TURN-BASED COMBAT) ====================
+    window.startHunt = function(questId, isMultiplayer, isArena = false) {
+        const sourceList = isArena ? ARENA_BOSSES : QUESTS_DATA;
+        const quest = sourceList.find(q => q.id === questId);
+        if (!quest) return;
+
+        // ตรวจสอบ HP ถ้าเหลือน้อยให้ฟื้นฟูขั้นต่ำก่อนออกล่า
+        if (gameState.hp < 30) gameState.hp = 60;
+        if (gameState.stamina < 40) gameState.stamina = 70;
+
+        // สร้างสมาชิกปาร์ตี้ AI หากเลือก Multiplayer
+        let party = [];
+        if (isMultiplayer) {
+            const shuffled = [...AI_HUNTERS].sort(() => 0.5 - Math.random());
+            party = shuffled.slice(0, 2).map(ai => ({
+                ...ai,
+                hp: 100,
+                maxHp: 100
+            }));
+            addWorldChat('GUILD', `${gameState.name} ยิงพลุ SOS ขอความช่วยเหลือในภารกิจล่า ${quest.name}!`, 'system');
+        }
+
+        combatState = {
+            quest: quest,
+            isArena: isArena,
+            isMultiplayer: isMultiplayer,
+            turn: 1,
+            phase: 1,
+            monsterHp: quest.hp,
+            monsterMaxHp: quest.hp,
+            partHp: quest.partHp,
+            partMaxHp: quest.partHp,
+            partBroken: false,
+            // ระบบชาร์จท่าไม้ตายของมอนสเตอร์ (Telegraphed Attack)
+            isChargingUltimate: false,
+            chargeTurnsLeft: 0,
+            stunTurns: 0,
+            // ท่าป้องกัน/หลบหลีกของผู้เล่นในเทิร์นนี้
+            stance: 'none', // 'none', 'guard', 'dodge'
+            perfectEvadeBuff: false,
+            // สถานะผิดปกติและบัฟของผู้เล่น
+            playerStatuses: { poison: 0, burn: 0, frostbite: 0 },
+            demonDrug: false,
+            armorSkin: false,
+            party: party,
+            isPlayerTurn: true
+        };
+
+        // ซ่อนเมนู Hub และแสดงฉากต่อสู้
+        document.getElementById('hub-nav').classList.add('hidden');
+        document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
+        document.getElementById('combat-arena').classList.remove('hidden');
+
+        // ตั้งค่า UI เริ่มต้นของฉากต่อสู้
+        const stats = getPlayerStats();
+        const wData = stats.weaponData;
+        document.getElementById('act-skill-name').innerHTML = `<i class="fa-solid fa-fire mr-1"></i>${wData.skillName}`;
+        document.getElementById('act-skill-cost').textContent = `ใช้ ${wData.stamCost} Stam`;
+        document.getElementById('act-dodge-chance').textContent = `โอกาสหลบ ${stats.dodgeChance}% (0 DMG)`;
+        document.getElementById('act-stun-chance').textContent = `ใช้ 20 Stam | สตั๊น ${stats.stunChance}%`;
+
+        document.getElementById('combat-mode-badge').textContent = isArena
+            ? (isMultiplayer ? 'ARENA BOSS • PARTY' : 'ARENA BOSS • SOLO')
+            : (isMultiplayer ? 'MULTIPLAYER PARTY (3 HUNTERS)' : 'SOLO HUNT');
+        document.getElementById('combat-mode-badge').className = isArena
+            ? 'px-2.5 py-0.5 rounded text-xs font-kanit font-bold bg-rose-950 text-rose-300 border border-rose-500'
+            : (isMultiplayer
+                ? 'px-2.5 py-0.5 rounded text-xs font-kanit font-bold bg-amber-950 text-amber-300 border border-amber-600'
+                : 'px-2.5 py-0.5 rounded text-xs font-kanit font-bold bg-red-950 text-red-300 border border-red-700');
+
+        const phaseBadge = document.getElementById('combat-phase-badge');
+        if (isArena) {
+            phaseBadge.classList.remove('hidden');
+            phaseBadge.textContent = 'Phase 1: Normal';
+        } else {
+            phaseBadge.classList.add('hidden');
+        }
+
+        document.getElementById('monster-name').textContent = quest.name;
+        document.getElementById('monster-stars').textContent = quest.stars;
+        document.getElementById('monster-title').textContent = quest.title;
+        document.getElementById('monster-icon').className = `fa-solid ${quest.icon}`;
+
+        const log = document.getElementById('combat-log');
+        log.innerHTML = '';
+        appendCombatLog(`⚔️ เริ่มภารกิจล่า <strong>${quest.name}</strong>! สังเกตจังหวะการชาร์จพลังของมอนสเตอร์ให้ดี!`, 'text-amber-300');
+        if (isMultiplayer) {
+            appendCombatLog(`🤝 นักล่าออนไลน์ <strong>${party[0].name}</strong> (${party[0].weapon}) และ <strong>${party[1].name}</strong> (${party[1].weapon}) เข้าร่วมปาร์ตี้!`, 'text-sky-300');
+        }
+
+        updateCombatUI();
+    };
+
+    function appendCombatLog(htmlText, colorClass = 'text-stone-200') {
+        const log = document.getElementById('combat-log');
+        const p = document.createElement('div');
+        p.className = `${colorClass} leading-relaxed border-b border-stone-900 pb-1`;
+        p.innerHTML = htmlText;
+        log.appendChild(p);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function updateCombatUI() {
+        if (!combatState) return;
+        const c = combatState;
+        const stats = getPlayerStats();
+
+        document.getElementById('combat-turn-badge').textContent = `Turn ${c.turn}`;
+
+        // แบนเนอร์แจ้งเตือนท่าชาร์จไม้ตายของมอนสเตอร์
+        const teleBanner = document.getElementById('telegraph-banner');
+        if (c.isChargingUltimate) {
+            teleBanner.classList.remove('hidden');
+            document.getElementById('telegraph-text').textContent =
+                `⚠️ อันตราย! ${c.quest.name} กำลังรวบรวมพลังเตรียมใช้ท่า [${c.quest.ultimateName}] ในเทิร์นนี้! (ใช้ การตั้งโล่, กลิ้งหลบ ${stats.dodgeChance}% หรือขัดจังหวะด้วย Stun/Flash Pod!)`;
+        } else {
+            teleBanner.classList.add('hidden');
+        }
+
+        // หลอดเลือดมอนสเตอร์
+        const mHpPct = Math.max(0, (c.monsterHp / c.monsterMaxHp) * 100);
+        document.getElementById('monster-hp-text').textContent = `${Math.ceil(c.monsterHp)} / ${c.monsterMaxHp}`;
+        document.getElementById('monster-hp-bar').style.width = `${mHpPct}%`;
+
+        // หลอด Part Break
+        const partPct = c.partBroken ? 0 : Math.max(0, Math.round((c.partHp / c.partMaxHp) * 100));
+        document.getElementById('monster-part-text').textContent = c.partBroken ? 'แตกหักแล้ว! (BROKEN)' : `${partPct}%`;
+        document.getElementById('monster-part-bar').style.width = `${partPct}%`;
+
+        // ป้ายสถานะมอนสเตอร์
+        const statusBox = document.getElementById('monster-statuses');
+        statusBox.innerHTML = '';
+        if (c.isChargingUltimate) {
+            statusBox.innerHTML += `<span class="px-2 py-0.5 rounded bg-red-900 border border-amber-400 text-amber-200 text-[11px] font-kanit animate-pulse"><i class="fa-solid fa-fire mr-1"></i>กำลังชาร์จท่าไม้ตาย!</span>`;
+        }
+        if (c.stunTurns > 0) {
+            statusBox.innerHTML += `<span class="px-2 py-0.5 rounded bg-yellow-950 border border-yellow-500 text-yellow-300 text-[11px] font-kanit"><i class="fa-solid fa-bolt mr-1"></i>มึนงงล้มลง (Stun ${c.stunTurns} เทิร์น • รับดาเมจ +30%)</span>`;
+        }
+        if (c.partBroken) {
+            statusBox.innerHTML += `<span class="px-2 py-0.5 rounded bg-amber-950 border border-amber-500 text-amber-300 text-[11px] font-kanit"><i class="fa-solid fa-bone mr-1"></i>ชิ้นส่วนแตกหัก (+โบนัสวัตถุดิบ)</span>`;
+        }
+
+        // ป้ายสถานะของ Hunter ในฉากต่อสู้
+        const hStatusBox = document.getElementById('hunter-combat-statuses');
+        hStatusBox.innerHTML = '';
+        if (c.perfectEvadeBuff) {
+            hStatusBox.innerHTML += `<span class="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-400 text-emerald-300 text-[11px] font-kanit"><i class="fa-solid fa-sparkles mr-1"></i>Counter Crit (+35% ATK เทิร์นนี้)</span>`;
+        }
+        if (c.demonDrug) {
+            hStatusBox.innerHTML += `<span class="px-2 py-0.5 rounded bg-orange-950 border border-orange-500 text-orange-300 text-[11px] font-kanit">Demondrug (+20% ATK)</span>`;
+        }
+        if (c.armorSkin) {
+            hStatusBox.innerHTML += `<span class="px-2 py-0.5 rounded bg-sky-950 border border-sky-500 text-sky-300 text-[11px] font-kanit">Armorskin (+25% DEF)</span>`;
+        }
+        if (c.playerStatuses.poison > 0) {
+            hStatusBox.innerHTML += `<span class="px-2 py-0.5 rounded bg-purple-950 border border-purple-500 text-purple-300 text-[11px] font-kanit"><i class="fa-solid fa-biohazard mr-1"></i>ติดพิษ (${c.playerStatuses.poison} เทิร์น)</span>`;
+        }
+        if (c.playerStatuses.burn > 0) {
+            hStatusBox.innerHTML += `<span class="px-2 py-0.5 rounded bg-red-950 border border-red-500 text-red-300 text-[11px] font-kanit"><i class="fa-solid fa-fire mr-1"></i>ไฟไหม้ (${c.playerStatuses.burn} เทิร์น)</span>`;
+        }
+        if (c.playerStatuses.frostbite > 0) {
+            hStatusBox.innerHTML += `<span class="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500 text-cyan-300 text-[11px] font-kanit"><i class="fa-solid fa-snowflake mr-1"></i>น้ำแข็งเกาะ (-Stam)</span>`;
+        }
+
+        // แสดง Palico และสมาชิกปาร์ตี้
+        const partyBar = document.getElementById('party-members-bar');
+        partyBar.innerHTML = `
+            <div class="bg-stone-900/90 border border-amber-700/40 rounded-lg px-3 py-1.5 flex items-center justify-between text-xs">
+                <span class="font-kanit text-amber-300"><i class="fa-solid fa-cat mr-1.5"></i>${gameState.palico} (Palico)</span>
+                <span class="text-emerald-400 text-[11px]">พร้อมสนับสนุน</span>
+            </div>
+        `;
+        c.party.forEach(p => {
+            partyBar.innerHTML += `
+                <div class="bg-stone-900/90 border border-sky-800/50 rounded-lg px-3 py-1.5 flex items-center justify-between text-xs">
+                    <span class="font-kanit text-sky-300"><i class="fa-solid fa-user-shield mr-1.5"></i>${p.name}</span>
+                    <span class="text-stone-400 text-[11px]">${p.weapon}</span>
+                </div>
+            `;
+        });
+
+        // ปิด/เปิดปุ่มตามเทิร์นและ Stamina
+        const wData = stats.weaponData;
+        const disabled = !c.isPlayerTurn;
+        document.getElementById('act-attack').disabled = disabled;
+        document.getElementById('act-guard').disabled = disabled;
+        document.getElementById('act-dodge').disabled = disabled;
+        document.getElementById('act-items-toggle').disabled = disabled;
+        document.getElementById('act-skill').disabled = disabled || (gameState.stamina < wData.stamCost);
+        document.getElementById('act-stun').disabled = disabled || (gameState.stamina < 20);
+        document.getElementById('act-dodge-chance').textContent = `โอกาสหลบ ${stats.dodgeChance}% (0 DMG)`;
+        document.getElementById('act-stun-chance').textContent = `ใช้ 20 Stam | สตั๊น ${stats.stunChance}%`;
+
+        // อัปเดต HUD ด้านบนด้วย
+        updateAllUI();
+    }
+
+    // ฟังก์ชันสร้างความเสียหายให้มอนสเตอร์
+    function dealDamageToMonster(rawDmg, partMult = 1.0, sourceName = 'คุณ', isCrit = false) {
+        const c = combatState;
+        // หากมอนสเตอร์ติด Stun จะรับดาเมจแรงขึ้น 30%
+        const stunBonusMult = c.stunTurns > 0 ? 1.3 : 1.0;
+        const mitigated = Math.max(6, Math.round((rawDmg * stunBonusMult) - c.quest.def * 0.38));
+        c.monsterHp = Math.max(0, c.monsterHp - mitigated);
+
+        // แอนิเมชันสั่นการ์ดมอนสเตอร์
+        const mCard = document.getElementById('monster-card');
+        mCard.classList.remove('animate-shake');
+        void mCard.offsetWidth;
+        mCard.classList.add('animate-shake');
+
+        spawnDamagePopup('monster-card', `${isCrit ? 'CRIT! ' : ''}-${mitigated}`, isCrit ? 'text-yellow-300' : 'text-red-400');
+
+        // ตรวจสอบการเปลี่ยนเฟสของบอสใน Arena Mode (เมื่อ HP ต่ำกว่า 50%)
+        if (c.isArena && c.phase === 1 && c.monsterHp > 0 && c.monsterHp <= c.monsterMaxHp * 0.5) {
+            c.phase = 2;
+            const phaseBadge = document.getElementById('combat-phase-badge');
+            phaseBadge.textContent = 'Phase 2: AWAKENED / HELLFIRE!';
+            phaseBadge.className = 'px-2.5 py-0.5 rounded text-xs font-kanit font-bold bg-red-900 text-amber-200 border border-amber-400 animate-pulse';
+            appendCombatLog(`🌋 <strong>PHASE SHIFT!</strong> <strong>${c.quest.name}</strong> ปลดปล่อยพลังที่แท้จริงเข้าสู่เฟสที่ 2! พลังโจมตีเพิ่มขึ้นอย่างมหาศาล!`, 'text-rose-400');
+        }
+
+        // คำนวณ Part Break
+        if (!c.partBroken) {
+            c.partHp -= Math.round(mitigated * partMult);
+            if (c.partHp <= 0) {
+                c.partHp = 0;
+                c.partBroken = true;
+                c.stunTurns = Math.max(c.stunTurns, 1);
+                if (c.isChargingUltimate) {
+                    c.isChargingUltimate = false;
+                    appendCombatLog(`💥 <strong>PART BROKEN & INTERRUPT!</strong> ชิ้นส่วนของ ${c.quest.name} แตกกระจายและขัดจังหวะท่าไม้ตายสำเร็จ!`, 'text-amber-300');
+                } else {
+                    appendCombatLog(`💥 <strong>PART BROKEN!</strong> ชิ้นส่วนของ ${c.quest.name} แตกกระจาย! มอนสเตอร์เสียหลักล้มลง!`, 'text-amber-400');
+                }
+            }
+        }
+        return mitigated;
+    }
+
+    // ฟังก์ชันขัดจังหวะมอนสเตอร์ (Interrupt / Stun Check)
+    function tryInterruptMonster(successRate, methodLabel) {
+        const c = combatState;
+        if (Math.random() * 100 <= successRate) {
+            c.stunTurns = 1;
+            if (c.isChargingUltimate) {
+                c.isChargingUltimate = false;
+                appendCombatLog(`⚡ <strong>ขัดจังหวะสำเร็จ! (INTERRUPT!)</strong> ${methodLabel} หยุดท่าชาร์จ <strong>[${c.quest.ultimateName}]</strong> ของ ${c.quest.name} และทำให้ล้มลงมึนงง!`, 'text-yellow-300');
+            } else {
+                appendCombatLog(`💫 <strong>สตั๊นสำเร็จ!</strong> ${methodLabel} ทำให้ ${c.quest.name} มึนงงเสียหลัก 1 เทิร์น!`, 'text-yellow-300');
+            }
+            return true;
+        } else {
+            appendCombatLog(`❌ ${methodLabel} ไม่สามารถทำให้ ${c.quest.name} ชะงักได้!`, 'text-stone-400');
+            return false;
+        }
+    }
+
+    // คำสั่งของผู้เล่น: 1. โจมตีปกติ
+    document.getElementById('act-attack').onclick = () => {
+        if (!combatState || !combatState.isPlayerTurn) return;
+        combatState.isPlayerTurn = false;
+        combatState.stance = 'none';
+
+        const stats = getPlayerStats();
+        const isCrit = combatState.perfectEvadeBuff || (Math.random() < 0.22);
+        const mult = isCrit ? 1.45 : (0.92 + Math.random() * 0.18);
+        const dmg = dealDamageToMonster(stats.atk * mult, stats.weaponData.partBonus, gameState.name, isCrit);
+
+        combatState.perfectEvadeBuff = false;
+        const stamGain = combatState.playerStatuses.frostbite > 0 ? 8 : 15;
+        gameState.stamina = Math.min(gameState.maxStamina, gameState.stamina + stamGain);
+        SoundFX.play('attack');
+        appendCombatLog(`🗡️ <strong>${gameState.name}</strong> โจมตีด้วย ${stats.weaponName} สร้างความเสียหาย <strong>${dmg}</strong> หน่วย!`, 'text-stone-100');
+
+        checkCombatProgression();
+    };
+
+    // คำสั่งของผู้เล่น: 2. ท่าไม้ตายอาวุธ
+    document.getElementById('act-skill').onclick = () => {
+        if (!combatState || !combatState.isPlayerTurn) return;
+        const stats = getPlayerStats();
+        const wData = stats.weaponData;
+        if (gameState.stamina < wData.stamCost) return;
+
+        combatState.isPlayerTurn = false;
+        combatState.stance = 'none';
+        gameState.stamina -= wData.stamCost;
+
+        const dmg = dealDamageToMonster(stats.atk * wData.skillMult, wData.partBonus * 1.3, gameState.name, true);
+        combatState.perfectEvadeBuff = false;
+        SoundFX.play('skill');
+        appendCombatLog(`🔥 <strong>${gameState.name}</strong> ปลดปล่อยท่าไม้ตาย <strong>[${wData.skillName}]</strong> ฟาดฟันรุนแรง <strong>${dmg}</strong> ดาเมจ!`, 'text-amber-300');
+
+        // โอกาส Stun พิเศษจากท่าไม้ตาย (เช่น Hammer / Charge Blade)
+        if (wData.stunChance && Math.random() < wData.stunChance && combatState.monsterHp > 0) {
+            tryInterruptMonster(100, `แรงกระแทกจาก ${wData.skillName}`);
+        }
+
+        checkCombatProgression();
+    };
+
+    // คำสั่งของผู้เล่น: 3. กระแทกขัดจังหวะ (Stun / Impact Strike)
+    document.getElementById('act-stun').onclick = () => {
+        if (!combatState || !combatState.isPlayerTurn) return;
+        if (gameState.stamina < 20) return;
+
+        combatState.isPlayerTurn = false;
+        combatState.stance = 'none';
+        gameState.stamina -= 20;
+
+        const stats = getPlayerStats();
+        const dmg = dealDamageToMonster(stats.atk * 0.65, stats.weaponData.partBonus * 1.4, gameState.name, false);
+        SoundFX.play('attack');
+        appendCombatLog(`🔨 <strong>${gameState.name}</strong> พุ่งกระแทกจุดอ่อนทำดาเมจ ${dmg} และพยายามขัดจังหวะ...`, 'text-yellow-200');
+
+        if (combatState.monsterHp > 0) {
+            tryInterruptMonster(stats.stunChance, 'การกระแทกจุดอ่อน');
+        }
+
+        checkCombatProgression();
+    };
+
+    // คำสั่งของผู้เล่น: 4. กลิ้งหลบ (Evade / Dodge %)
+    document.getElementById('act-dodge').onclick = () => {
+        if (!combatState || !combatState.isPlayerTurn) return;
+        combatState.isPlayerTurn = false;
+        combatState.stance = 'dodge';
+
+        const stats = getPlayerStats();
+        SoundFX.play('craft');
+        appendCombatLog(`💨 <strong>${gameState.name}</strong> เตรียมพร้อมกลิ้งหลบการโจมตีในเทิร์นนี้ (โอกาสหลบสมบูรณ์ <strong>${stats.dodgeChance}%</strong>)!`, 'text-emerald-300');
+        checkCombatProgression();
+    };
+
+    // คำสั่งของผู้เล่น: 5. ตั้งโล่ป้องกัน (Guard / Brace)
+    document.getElementById('act-guard').onclick = () => {
+        if (!combatState || !combatState.isPlayerTurn) return;
+        combatState.isPlayerTurn = false;
+        combatState.stance = 'guard';
+        const stamGain = combatState.playerStatuses.frostbite > 0 ? 12 : 25;
+        gameState.stamina = Math.min(gameState.maxStamina, gameState.stamina + stamGain);
+
+        SoundFX.play('craft');
+        appendCombatLog(`🛡️ <strong>${gameState.name}</strong> ตั้งโล่ป้องกันอย่างมั่นคง (ลดความเสียหาย 75% และฟื้นฟู +${stamGain} Stamina)`, 'text-sky-300');
+        checkCombatProgression();
+    };
+
+    // คำสั่งของผู้เล่น: 6. เปิดลิ้นชักใช้ไอเทม
+    document.getElementById('act-items-toggle').onclick = () => {
+        const drawer = document.getElementById('combat-item-drawer');
+        drawer.classList.toggle('hidden');
+        renderCombatItemDrawer();
+    };
+
+    function renderCombatItemDrawer() {
+        const drawer = document.getElementById('combat-item-drawer');
+        drawer.innerHTML = '';
+        const usable = [
+            'Potion', 'Mega Potion', 'Max Potion', 'Ration',
+            'Antidote', 'Nulberry', 'Flash Pod', 'Shock Trap',
+            'Mega Barrel Bomb', 'Demondrug'
+        ];
+
+        usable.forEach(key => {
+            const qty = gameState.inventory[key] || 0;
+            const info = ITEMS_INFO[key];
+            const btn = document.createElement('button');
+            btn.disabled = qty <= 0;
+            btn.className = 'btn-guild p-2 rounded-lg text-[11px] font-kanit flex items-center justify-between gap-1';
+            btn.innerHTML = `<span class="truncate">${info.th.split(' ')[0]}</span><span class="text-amber-300 font-bold shrink-0">x${qty}</span>`;
+            btn.onclick = () => useCombatItem(key);
+            drawer.appendChild(btn);
+        });
+    }
+
+    function useCombatItem(key) {
+        if (!combatState || !combatState.isPlayerTurn) return;
+        if ((gameState.inventory[key] || 0) <= 0) return;
+
+        gameState.inventory[key]--;
+        if (gameState.inventory[key] <= 0) delete gameState.inventory[key];
+
+        document.getElementById('combat-item-drawer').classList.add('hidden');
+        combatState.isPlayerTurn = false;
+        combatState.stance = 'none';
+
+        const stats = getPlayerStats();
+        if (key === 'Potion') {
+            gameState.hp = Math.min(stats.maxHp, gameState.hp + 50);
+            SoundFX.play('heal');
+            appendCombatLog(`🧪 <strong>${gameState.name}</strong> ดื่ม Potion ฟื้นฟู HP +50 หน่วย!`, 'text-emerald-400');
+        } else if (key === 'Mega Potion') {
+            gameState.hp = Math.min(stats.maxHp, gameState.hp + 120);
+            SoundFX.play('heal');
+            appendCombatLog(`🧪 <strong>${gameState.name}</strong> ดื่ม Mega Potion ฟื้นฟู HP +120 หน่วย!`, 'text-emerald-300');
+        } else if (key === 'Max Potion') {
+            gameState.hp = stats.maxHp;
+            SoundFX.play('heal');
+            appendCombatLog(`💖 <strong>${gameState.name}</strong> กิน Max Potion ฟื้นฟูพลังชีวิตเต็ม 100%!`, 'text-rose-300');
+        } else if (key === 'Ration') {
+            gameState.stamina = Math.min(gameState.maxStamina, gameState.stamina + 60);
+            SoundFX.play('heal');
+            appendCombatLog(`🍖 <strong>${gameState.name}</strong> กินเสบียงย่าง ฟื้นฟู Stamina +60!`, 'text-amber-300');
+        } else if (key === 'Antidote') {
+            combatState.playerStatuses.poison = 0;
+            gameState.hp = Math.min(stats.maxHp, gameState.hp + 15);
+            SoundFX.play('heal');
+            appendCombatLog(`💊 <strong>${gameState.name}</strong> ดื่ม Antidote ล้างสถานะติดพิษหมดจด!`, 'text-purple-300');
+        } else if (key === 'Nulberry') {
+            combatState.playerStatuses.burn = 0;
+            combatState.playerStatuses.frostbite = 0;
+            SoundFX.play('heal');
+            appendCombatLog(`🍒 <strong>${gameState.name}</strong> กินผล Nulberry ล้างสถานะธาตุทั้งหมด!`, 'text-cyan-300');
+        } else if (key === 'Flash Pod') {
+            SoundFX.play('skill');
+            appendCombatLog(`☀️ <strong>${gameState.name}</strong> ยิงระเบิดแสง Flash Pod ใส่หน้า <strong>${combatState.quest.name}</strong>!`, 'text-yellow-300');
+            tryInterruptMonster(90, 'แสงแฟลชเจิดจ้า');
+        } else if (key === 'Shock Trap') {
+            if (combatState.quest.isElder) {
+                SoundFX.play('hurt');
+                appendCombatLog(`⚠️ กับดักสายฟ้าใช้ไม่ได้ผลกับมังกรโบราณ <strong>${combatState.quest.name}</strong>!`, 'text-red-400');
+            } else {
+                SoundFX.play('skill');
+                appendCombatLog(`⚡ <strong>${gameState.name}</strong> วางกับดักสายฟ้า Shock Trap!`, 'text-amber-300');
+                tryInterruptMonster(100, 'กับดักสายฟ้า');
+            }
+        } else if (key === 'Mega Barrel Bomb') {
+            const mult = combatState.stunTurns > 0 ? 2.0 : 1.0;
+            const bombDmg = Math.round(220 * mult);
+            combatState.monsterHp = Math.max(0, combatState.monsterHp - bombDmg);
+            SoundFX.play('skill');
+            spawnDamagePopup('monster-card', `BOOM! -${bombDmg}`, 'text-orange-400');
+            appendCombatLog(`💣 <strong>${gameState.name}</strong> จุดระเบิด Mega Barrel Bomb! สร้างความเสียหาย <strong>${bombDmg}</strong> หน่วย${mult > 1 ? ' (โบนัสขณะมอนสเตอร์ล้ม!)' : ''}!`, 'text-orange-300');
+        } else if (key === 'Demondrug') {
+            combatState.demonDrug = true;
+            SoundFX.play('heal');
+            appendCombatLog(`🔥 <strong>${gameState.name}</strong> ดื่ม Demondrug! พลังโจมตีเพิ่มขึ้น 20% ตลอดการต่อสู้!`, 'text-orange-300');
+        }
+
+        checkCombatProgression();
+    }
+
+    // ตรวจสอบลำดับเทิร์น (ปาร์ตี้ AI -> Palico -> มอนสเตอร์)
+    function checkCombatProgression() {
+        updateCombatUI();
+
+        if (combatState.monsterHp <= 0) {
+            setTimeout(() => handleHuntVictory(), 600);
+            return;
+        }
+
+        // เทิร์นของเพื่อนร่วมปาร์ตี้ (Multiplayer AI) และ Palico
+        setTimeout(() => {
+            if (!combatState) return;
+            const stats = getPlayerStats();
+
+            // 1. เพื่อนร่วมปาร์ตี้ AI ช่วยโจมตี/ฮีล
+            if (combatState.isMultiplayer && combatState.monsterHp > 0) {
+                combatState.party.forEach(ai => {
+                    if (combatState.monsterHp <= 0) return;
+                    if (ai.role === 'Support' && gameState.hp < stats.maxHp * 0.65 && Math.random() < 0.65) {
+                        const healAmt = 38;
+                        gameState.hp = Math.min(stats.maxHp, gameState.hp + healAmt);
+                        appendCombatLog(`🎶 <strong>${ai.name}</strong> เป่าขลุ่ย Hunting Horn ฟื้นฟู HP ให้ทีม +${healAmt}!`, 'text-emerald-300');
+                    } else {
+                        const aiDmg = Math.round(stats.atk * (0.55 + Math.random() * 0.25));
+                        const dealt = dealDamageToMonster(aiDmg, 0.8, ai.name, false);
+                        appendCombatLog(`⚔️ <strong>${ai.name}</strong> (${ai.weapon}) เข้าประชิดโจมตีทำดาเมจ <strong>${dealt}</strong>!`, 'text-sky-300');
+                    }
+                });
+            }
+
+            // 2. คู่หูแมว Palico ช่วยเหลือ
+            if (combatState.monsterHp > 0 && Math.random() < 0.48) {
+                if (gameState.hp < stats.maxHp * 0.7) {
+                    const vigorHeal = 32;
+                    gameState.hp = Math.min(stats.maxHp, gameState.hp + vigorHeal);
+                    appendCombatLog(`🐱 <strong>${gameState.palico}</strong> ส่งแมลงฮีล Vigorwasp ช่วยฟื้นฟู HP +${vigorHeal}!`, 'text-emerald-400');
+                } else {
+                    const catDmg = Math.round(15 + gameState.hr * 5);
+                    combatState.monsterHp = Math.max(0, combatState.monsterHp - catDmg);
+                    appendCombatLog(`🐾 <strong>${gameState.palico}</strong> ขว้างระเบิดเหมียวใส่มอนสเตอร์ทำดาเมจ <strong>${catDmg}</strong>!`, 'text-amber-200');
+                }
+            }
+
+            updateCombatUI();
+
+            if (combatState.monsterHp <= 0) {
+                setTimeout(() => handleHuntVictory(), 600);
+                return;
+            }
+
+            // 3. เทิร์นของมอนสเตอร์
+            setTimeout(() => {
+                if (!combatState) return;
+                monsterTurn();
+            }, 650);
+
+        }, 550);
+    }
+
+    function monsterTurn() {
+        const c = combatState;
+        const stats = getPlayerStats();
+
+        // คำนวณความเสียหายต่อเนื่องจากสถานะผิดปกติของผู้เล่น (Poison / Burn)
+        if (c.playerStatuses.poison > 0) {
+            const pDmg = Math.max(8, Math.round(stats.maxHp * 0.06));
+            gameState.hp = Math.max(0, gameState.hp - pDmg);
+            c.playerStatuses.poison--;
+            appendCombatLog(`☠️ พิษแล่นเข้าสู่ร่างกาย! คุณเสีย HP <strong>${pDmg}</strong> หน่วย`, 'text-purple-400');
+        }
+        if (c.playerStatuses.burn > 0) {
+            const bDmg = Math.max(10, Math.round(stats.maxHp * 0.07));
+            gameState.hp = Math.max(0, gameState.hp - bDmg);
+            c.playerStatuses.burn--;
+            appendCombatLog(`🔥 เปลวไฟเผาไหม้ร่างกาย! คุณเสีย HP <strong>${bDmg}</strong> หน่วย`, 'text-orange-400');
+        }
+        if (c.playerStatuses.frostbite > 0) {
+            c.playerStatuses.frostbite--;
+        }
+
+        if (gameState.hp <= 0) {
+            handleHuntDefeat();
+            return;
+        }
+
+        // ตรวจสอบว่ามอนสเตอร์ติด Stun อยู่หรือไม่
+        if (c.stunTurns > 0) {
+            c.stunTurns--;
+            appendCombatLog(`💫 <strong>${c.quest.name}</strong> ยังคงมึนงงล้มลงกับพื้น ไม่สามารถโจมตีในเทิร์นนี้ได้!`, 'text-yellow-300');
+        }
+        // กรณีมอนสเตอร์ชาร์จท่าไม้ตายไว้จากเทิร์นที่แล้ว -> ปล่อยท่าไม้ตายรุนแรง!
+        else if (c.isChargingUltimate) {
+            c.isChargingUltimate = false;
+            const phaseMult = c.phase === 2 ? 1.25 : 1.0;
+            // หากทำลายชิ้นส่วนได้แล้ว ความแรงท่าไม้ตายลดลง 25%
+            const partNerf = c.partBroken ? 0.75 : 1.0;
+            const rawUlt = c.quest.atk * 2.15 * phaseMult * partNerf;
+            const fullDmg = Math.max(15, Math.round(rawUlt - stats.def * 0.45));
+
+            resolveIncomingAttack(fullDmg, `💥 <strong>${c.quest.name}</strong> ปลดปล่อยท่าไม้ตายทำลายล้าง <strong>[${c.quest.ultimateName}]</strong>!`, true);
+        }
+        // เทิร์นปกติของมอนสเตอร์: มีโอกาสเริ่มชาร์จท่าไม้ตาย (Telegraphed Attack) หรือโจมตีปกติ
+        else {
+            const chargeChance = c.isArena ? 0.38 : 0.28;
+            if (Math.random() < chargeChance) {
+                c.isChargingUltimate = true;
+                SoundFX.play('skill');
+                appendCombatLog(`⚠️ <strong>คำเตือนอันตราย!</strong> <strong>${c.quest.name}</strong> กำลังสูดลมหายใจและรวบรวมพลังมหาศาล เตรียมใช้ท่า <strong>[${c.quest.ultimateName}]</strong> ในเทิร์นหน้า!`, 'text-amber-300');
+            } else {
+                const phaseMult = c.phase === 2 ? 1.25 : 1.0;
+                const isHeavy = Math.random() < 0.3;
+                const rawAtk = c.quest.atk * (isHeavy ? 1.3 : 1.0) * phaseMult;
+                const fullDmg = Math.max(5, Math.round(rawAtk - stats.def * 0.55));
+                const atkDesc = isHeavy ? 'คำรามและพุ่งกระแทกอย่างดุเดือด!' : 'ตะปบและฟาดหางใส่คุณ!';
+
+                resolveIncomingAttack(fullDmg, `🦖 <strong>${c.quest.name}</strong> ${atkDesc}`, isHeavy);
+            }
+        }
+
+        c.stance = 'none';
+        c.turn++;
+
+        if (gameState.hp <= 0) {
+            handleHuntDefeat();
+            return;
+        }
+
+        c.isPlayerTurn = true;
+        updateCombatUI();
+    }
+
+    // ประมวลผลความเสียหายที่เข้ามาตามท่าป้องกัน/หลบหลีกของผู้เล่น
+    function resolveIncomingAttack(fullDmg, attackIntroMsg, canInflictStatus) {
+        const c = combatState;
+        const stats = getPlayerStats();
+
+        // กรณีที่ 1: ผู้เล่นเลือก "กลิ้งหลบ (Evade)"
+        if (c.stance === 'dodge') {
+            const roll = Math.random() * 100;
+            if (roll <= stats.dodgeChance) {
+                c.perfectEvadeBuff = true;
+                SoundFX.play('heal');
+                appendCombatLog(`${attackIntroMsg} ➔ ✨ <strong>หลบหลีกสมบูรณ์! (PERFECT EVADE!)</strong> คุณกลิ้งหลบพ้นคมเขี้ยวได้อย่างหวุดหวิด (ได้รับ <strong>0 DMG</strong> และได้บัฟโจมตีสวนกลับ +35%!)`, 'text-emerald-300');
+                return;
+            } else {
+                gameState.hp = Math.max(0, gameState.hp - fullDmg);
+                SoundFX.play('hurt');
+                appendCombatLog(`${attackIntroMsg} ➔ ❌ <strong>กลิ้งหลบพลาด!</strong> คุณเสียจังหวะและรับความเสียหายเต็มๆ <strong>${fullDmg}</strong> หน่วย!`, 'text-red-400');
+                applyMonsterStatusIfAny(canInflictStatus);
+                return;
+            }
+        }
+
+        // กรณีที่ 2: ผู้เล่นเลือก "ตั้งโล่ป้องกัน (Guard)"
+        if (c.stance === 'guard') {
+            const guardedDmg = Math.max(2, Math.round(fullDmg * 0.25));
+            gameState.hp = Math.max(0, gameState.hp - guardedDmg);
+            SoundFX.play('craft');
+            appendCombatLog(`${attackIntroMsg} ➔ 🛡️ <strong>ตั้งโล่ป้องกันสำเร็จ!</strong> ลดความเสียหายลง 75% เหลือเพียง <strong>${guardedDmg}</strong> หน่วย!`, 'text-sky-300');
+            return;
+        }
+
+        // กรณีที่ 3: ไม่ได้ป้องกันหรือหลบหลีก รับดาเมจ 100%
+        gameState.hp = Math.max(0, gameState.hp - fullDmg);
+        SoundFX.play('hurt');
+        appendCombatLog(`${attackIntroMsg} ➔ คุณได้รับความเสียหาย <strong>${fullDmg}</strong> หน่วย!`, 'text-red-400');
+        applyMonsterStatusIfAny(canInflictStatus);
+    }
+
+    function applyMonsterStatusIfAny(canInflict) {
+        const c = combatState;
+        if (!canInflict || !c.quest.statusEffect || Math.random() > 0.45) return;
+
+        const eff = c.quest.statusEffect;
+        if (eff === 'poison' && c.playerStatuses.poison === 0) {
+            c.playerStatuses.poison = 3;
+            appendCombatLog(`☠️ คุณติดสถานะ <strong>พิษ (Poison)</strong> 3 เทิร์น! (ใช้ Antidote เพื่อรักษา)`, 'text-purple-300');
+        } else if (eff === 'burn' && c.playerStatuses.burn === 0) {
+            c.playerStatuses.burn = 3;
+            appendCombatLog(`🔥 คุณติดสถานะ <strong>ไฟไหม้ (Burn)</strong> 3 เทิร์น! (ใช้ Nulberry เพื่อรักษา)`, 'text-orange-300');
+        } else if (eff === 'frostbite' && c.playerStatuses.frostbite === 0) {
+            c.playerStatuses.frostbite = 3;
+            appendCombatLog(`❄️ คุณติดสถานะ <strong>น้ำแข็งเกาะ (Frostbite)</strong> การฟื้นฟู Stamina ลดลง!`, 'text-cyan-300');
+        }
+    }
+
+    // จบเควสต์: ชนะ (QUEST CLEAR)
+    function handleHuntVictory() {
+        const c = combatState;
+        const q = c.quest;
+        SoundFX.play('victory');
+
+        // คำนวณของรางวัล
+        gameState.zenny += q.zenny;
+        gameState.exp += q.exp;
+        gameState.foodBuff = null; // หมดบัฟอาหารหลังจบเควสต์
+
+        let lootSummary = [];
+        q.drops.forEach(d => {
+            if (Math.random() <= d.chance) {
+                const count = Math.floor(Math.random() * (d.max - d.min + 1)) + d.min;
+                gameState.inventory[d.item] = (gameState.inventory[d.item] || 0) + count;
+                lootSummary.push(`${ITEMS_INFO[d.item].th.split(' ')[0]} x${count}`);
+            }
+        });
+
+        // รางวัลเหรียญอารีน่าหากชนะใน Arena Mode
+        if (c.isArena && q.arenaCoins) {
+            gameState.inventory['Arena Coin'] = (gameState.inventory['Arena Coin'] || 0) + q.arenaCoins;
+            lootSummary.push(`เหรียญอารีน่า x${q.arenaCoins}`);
+        }
+
+        // โบนัส Part Break
+        if (c.partBroken && q.partDrop) {
+            gameState.inventory[q.partDrop] = (gameState.inventory[q.partDrop] || 0) + 1;
+            lootSummary.push(`[โบนัสชิ้นส่วนแตก] ${ITEMS_INFO[q.partDrop].th.split(' ')[0]} x1`);
+        }
+
+        // เช็คอัปเลเวล Hunter Rank (HR)
+        let rankUpMsg = '';
+        while (gameState.exp >= gameState.hr * 100) {
+            gameState.exp -= gameState.hr * 100;
+            gameState.hr++;
+            rankUpMsg = ` 🎉 เลื่อนระดับเป็น Hunter Rank ${gameState.hr}!`;
+        }
+
+        showToast(`QUEST CLEAR! ล่า ${q.name} สำเร็จ! รับ ${q.zenny.toLocaleString()} z${rankUpMsg}`, 'success');
+        addWorldChat('WORLD', `🏆 นักล่า "${gameState.name}" ${c.isMultiplayer ? 'และปาร์ตี้ ' : ''}พิชิต ${q.name} (${q.stars}) สำเร็จ!`, 'victory');
+
+        if (lootSummary.length > 0) {
+            showToast(`แล่ชิ้นส่วนได้รับ: ${lootSummary.join(', ')}`, 'info');
+        }
+
+        exitCombatToHub();
+    }
+
+    // จบเควสต์: พ่ายแพ้ (QUEST FAILED)
+    function handleHuntDefeat() {
+        SoundFX.play('hurt');
+        gameState.hp = Math.round(getPlayerStats().maxHp * 0.5);
+        gameState.stamina = gameState.maxStamina;
+        gameState.foodBuff = null;
+        const penalty = Math.min(gameState.zenny, 100);
+        gameState.zenny -= penalty;
+
+        showToast(`คุณหมดสติ! รถเข็นแมวพากลับหมู่บ้าน (เสียค่าธรรมเนียม ${penalty} z)`, 'danger');
+        exitCombatToHub();
+    }
+
+    document.getElementById('btn-flee-quest').onclick = () => {
+        showConfirmModal('ถอนตัวจากภารกิจ', 'คุณต้องการยกเลิกเควสต์และเดินทางกลับหมู่บ้าน Astera ใช่หรือไม่?', () => {
+            showToast('ถอนตัวกลับหมู่บ้าน Astera เรียบร้อย', 'info');
+            exitCombatToHub();
+        });
+    };
+
+    function exitCombatToHub() {
+        combatState = null;
+        document.getElementById('combat-arena').classList.add('hidden');
+        document.getElementById('hub-nav').classList.remove('hidden');
+
+        // กลับไปที่แท็บกระดานเควสต์
+        document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('border-amber-500', 'bg-amber-950/40', 'text-amber-300'));
+        const questBtn = document.querySelector('.nav-tab[data-tab="quests"]');
+        if (questBtn) questBtn.classList.add('border-amber-500', 'bg-amber-950/40', 'text-amber-300');
+
+        document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
+        document.getElementById('tab-quests').classList.remove('hidden');
+
+        updateAllUI();
+    }
+
+    // ==================== 13. ระบบ WORLD CHAT จำลอง MMORPG ====================
+    function addWorldChat(sender, text, type = 'normal') {
+        const feed = document.getElementById('world-chat-feed');
+        if (!feed) return;
+
+        const row = document.createElement('div');
+        const time = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+
+        if (type === 'system') {
+            row.className = 'p-2 rounded bg-amber-950/30 border-l-2 border-amber-500 text-amber-200';
+            row.innerHTML = `<span class="text-[10px] text-stone-500 mr-1">[${time}]</span><strong>[${sender}]</strong> ${text}`;
+        } else if (type === 'victory') {
+            row.className = 'p-2 rounded bg-emerald-950/30 border-l-2 border-emerald-500 text-emerald-200';
+            row.innerHTML = `<span class="text-[10px] text-stone-500 mr-1">[${time}]</span>${text}`;
+        } else {
+            row.className = 'py-1 border-b border-stone-900 text-stone-300';
+            row.innerHTML = `<span class="text-[10px] text-stone-500 mr-1">[${time}]</span><strong class="text-amber-400">${sender}:</strong> ${text}`;
+        }
+
+        feed.appendChild(row);
+        if (feed.children.length > 40) {
+            feed.removeChild(feed.firstChild);
+        }
+        feed.scrollTop = feed.scrollHeight;
+    }
+
+    function startWorldChatSimulation() {
+        if (chatInterval) clearInterval(chatInterval);
+
+        const sampleMessages = [
+            { user: 'Kaito_TH', msg: 'หาตี้ล่า Rathalos ครับ ขาดสายฮีล 1 ตำแหน่ง!' },
+            { user: 'NongMay_SNS', msg: 'เพิ่งตีบวกดาบใหม่เสร็จ แรงขึ้นเยอะเลย~' },
+            { user: 'ZeusBlade', msg: 'ใครฟาร์มทับทิม Rathalos Ruby ได้บ้าง ออกยากมากก' },
+            { user: 'Bank_Hammer', msg: 'อย่าลืมกินข้าวที่โรงอาหารก่อนออกล่า Nergigante นะทุกคน' },
+            { user: 'Luna_Felyne', msg: 'มีใครไปขุดแร่ Machalite ที่ Wildspire ไหมครับ' },
+            { user: 'ArcheryPro', msg: 'ใช้ Flash Pod ตอน Rathalos บิน ช่วยได้เยอะเลย!' }
+        ];
+
+        addWorldChat('GUILD', 'เชื่อมต่อกับเซิร์ฟเวอร์ Astera TH-01 สำเร็จ', 'system');
+
+        chatInterval = setInterval(() => {
+            // อัปเดตจำนวนคนออนไลน์แบบสุ่มเล็กน้อย
+            const baseOnline = 1420 + Math.floor(Math.random() * 35);
+            const el = document.getElementById('online-count');
+            if (el) el.textContent = baseOnline.toLocaleString();
+
+            // สุ่มข้อความจากผู้เล่น AI
+            if (Math.random() < 0.7) {
+                const pick = sampleMessages[Math.floor(Math.random() * sampleMessages.length)];
+                addWorldChat(pick.user, pick.msg, 'normal');
+            } else {
+                const ai = AI_HUNTERS[Math.floor(Math.random() * AI_HUNTERS.length)];
+                addWorldChat('WORLD', `⚔️ ปาร์ตี้ของ ${ai.name} ล่า Anjanath สำเร็จ!`, 'victory');
+            }
+        }, 7500);
+    }
+
+    // ส่งข้อความแชทของผู้เล่นเอง
+    document.getElementById('chat-form').onsubmit = (e) => {
+        e.preventDefault();
+        const input = document.getElementById('chat-input');
+        const msg = input.value.trim();
+        if (!msg || !gameState) return;
+
+        addWorldChat(`${gameState.name} (HR ${gameState.hr})`, msg, 'normal');
+        input.value = '';
+    };
+
+    // ==================== 14. ปุ่มตั้งค่าและเริ่มต้นระบบ (INITIALIZATION) ====================
+    document.getElementById('btn-toggle-sound').onclick = () => {
+        SoundFX.enabled = !SoundFX.enabled;
+        const icon = document.getElementById('sound-icon');
+        icon.className = SoundFX.enabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark text-stone-500';
+        showToast(SoundFX.enabled ? 'เปิดเสียงเอฟเฟกต์แล้ว' : 'ปิดเสียงเอฟเฟกต์แล้ว', 'info');
+    };
+
+    document.getElementById('btn-reset-save').onclick = () => {
+        showConfirmModal('เริ่มเกมใหม่ (Reset Save)', 'ข้อมูลตัวละคร ไอเทม และเลเวล HR ทั้งหมดจะถูกลบถาวร ต้องการดำเนินการต่อหรือไม่?', () => {
+            localStorage.removeItem('mh_frontier_save_v1');
+            location.reload();
+        });
+    };
+
+    // เริ่มต้นทำงานเมื่อโหลดหน้าเว็บเสร็จ
+    window.onload = function() {
+        initCharacterCreation();
+        if (loadGame() && gameState && gameState.name) {
+            enterMainGame();
+        }
+    };
+    </script>
+</body>
+</html>
